@@ -1,0 +1,14 @@
+dash==2.16.1
+dash_auth==2.3.0
+dash_bootstrap_components==1.6.0
+dash_core_components==2.0.0
+dash_html_components==2.0.0
+Flask==3.0.3
+pandas==2.2.2
+Pillow==10.3.0
+plotly==5.20.0
+reportlab==4.2.0
+requests==2.31.0
+scipy==1.13.0
+gunicorn
+dash-tools
