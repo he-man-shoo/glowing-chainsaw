@@ -12,3 +12,4 @@ requests==2.31.0
 scipy==1.13.0
 gunicorn
 dash-tools
+openpyxl
