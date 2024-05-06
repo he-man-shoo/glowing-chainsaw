@@ -580,12 +580,12 @@ html.Br(),
 
 html.Br(),
 
-    html.Div([
-        html.H2(children='Financials'),
-        html.Br(),
-       dbc.Container([html.P(id = "financial_table"), 
-                  ],className='six columns'),
-    ], className='row'),
+    # html.Div([
+    #     html.H2(children='Financials'),
+    #     html.Br(),
+    #    dbc.Container([html.P(id = "financial_table"), 
+    #               ],className='six columns'),
+    # ], className='row'),
 
 html.Br(),
 
@@ -605,7 +605,7 @@ html.Div([
     Output('bol_config', 'children'),
     Output('aug_energy_table', 'children'),
     Output('power_energy_rte_table', 'children'),
-    Output('financial_table', 'children'),
+    # Output('financial_table', 'children'),
     Output('download-pdf', 'href'),
     Output('generate-pdf-button', 'n_clicks'),
     [Input('inp_projloct', 'value'),
@@ -957,7 +957,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
 
 
-    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, financial_table_dict, pdf_file, n_clicks
+    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, pdf_file, n_clicks
 
 
 @app.server.route('/download/<path:path>')
