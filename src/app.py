@@ -4,8 +4,6 @@ from dash import Dash, dash_table, dcc, html, Input, Output, State
 import plotly.express as px
 import dash_bootstrap_components as dbc
 
-app = Dash(__name__)
-server = app.server
 
 url = 'https://github.com/he-man-shoo/glowing-chainsaw/raw/main/Months%20to%20COD.xlsx'
 df = pd.read_excel(url)
@@ -54,7 +52,7 @@ def table_format(table):
 df = table_format(df)
 
 # Initialize the Dash app
-app = dash.Dash(server=server, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"])
+app = dash.Dash(external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"])
 server = app.server
 
 app.layout = html.Div([
