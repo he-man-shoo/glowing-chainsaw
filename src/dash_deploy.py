@@ -58,7 +58,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     aux_power_percentage = 0.0310569
 
     def get_DC_RTE(battery_model,duration):
-        df = pd.read_excel('DC RTE.xlsx')
+        df = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/DC%20RTE.xlsx')
         df.index = df["End of Year"]
         df = df.loc[0:] 
 
@@ -73,7 +73,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     #### And if HD 511, multiply with discharge efficiency
 
     def get_deg_curve(battery_model,number_cycles,duration,r_SOC):
-        df = pd.read_excel('Degradation Curves.xlsx')
+        df = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/Degradation%20Curves.xlsx')
         df.index = df["End of Year"]
         df = df.loc[0:25,  str(battery_model+' | '+str(number_cycles)+' | '+str(duration)+' | '+str(r_SOC))]
         df = pd.DataFrame(df)
@@ -88,7 +88,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     ## Get relevant Battery Data from Excel File
 
     def get_batt_data(battery_model):
-        df = pd.read_excel('Batteries.xlsx')
+        df = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/Batteries.xlsx')
         df.index = df["Model"]
         df = df[battery_model]
         batt_nameplate = df['Nameplate Energy']
@@ -105,7 +105,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     ## Get relevant PCS Data from Excel File
 
     def get_PCS_data(PCS_model, max_site_temp):
-        df = pd.read_excel('PCS.xlsx')
+        df = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/PCS.xlsx')
         df.index = df["Model"]
         df = df[PCS_model]
 
@@ -128,7 +128,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     ## Create Losses Table and Find One Way Efficiency
     def get_losses_table(point_of_measurement):
-        loss_to_POM = pd.read_excel('Losses Table.xlsx', header=None)
+        loss_to_POM = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/Losses%20Table.xlsx', header=None)
 
         Inverter_Losses = pd.DataFrame([['Inverter', 1 - PCS_efficiency]],index=[1])
         loss_to_POM = pd.concat([loss_to_POM.iloc[:1], Inverter_Losses, loss_to_POM.iloc[1:]]).reset_index(drop=True)
@@ -151,7 +151,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     ## Calculate Calendar Losses to COD
 
     def get_calendar_loss_table(energy_req):
-        df = pd.read_excel('Months to COD.xlsx')
+        df = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/Months%20to%20COD.xlsx')
 
         df = df.loc[df['Rated energy (MWh)']>energy_req].iloc[0]
 
@@ -206,7 +206,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     ### Get Cost for Components
     def get_financials_table(PCS_model):
-        df = pd.read_excel('Financials.xlsx', index_col="Component")
+        df = pd.read_excel('https://github.com/he-man-shoo/glowing-chainsaw/raw/main/f.xlsx', index_col="Component")
 
 
         cost_container = df.loc[df.index == 'Containers']["Cost"]['Containers']
@@ -772,8 +772,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
             pdf_file,
             pagesize=letter,
         )
-            #     pdf_file = str(proj_name) + "example.pdf"
-    #     doc = SimpleDocTemplate(pdf_file, pagesize=letter)
+        
         # Table data
         bill_of_materials_data = []
         bill_of_materials_data.append(bill_of_materials.columns.tolist())
