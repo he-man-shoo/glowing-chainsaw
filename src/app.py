@@ -830,7 +830,11 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
             canvas.restoreState()
 
-        pdf_file = str(proj_name) + " example.pdf"
+
+        outfilename = str(proj_name) + " example.pdf"
+        outfiledir = 'C:\\Users\\Public\\Downloads'
+        pdf_file = os.path.join(outfiledir, outfilename)
+
         # Create a PDF document
         doc = SimpleDocTemplate(
             pdf_file,
@@ -1037,8 +1041,6 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
     else:
         # If button is not clicked, do nothing
         pdf_file = ''
-
-
     return pdf_file, n_clicks
 
 
