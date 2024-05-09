@@ -666,6 +666,8 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
     bol_config = table_format(bol_config)
 
+    bill_of_materials_dict = table_format(bill_of_materials)
+
     aug_energy_dict = table_format(aug_energy_table)
     
     power_energy_rte_dict = table_format(power_energy_rte_table)
@@ -957,7 +959,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
 
 
-    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, pdf_file, n_clicks
+    return fig, bill_of_materials_dict, aug_energy_dict, power_energy_rte_dict, pdf_file, n_clicks
 
 
 @app.server.route('/download/<path:path>')
