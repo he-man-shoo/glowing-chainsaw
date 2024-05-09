@@ -556,7 +556,7 @@ html.Br(),
 
     html.Div([
         html.H2(children='Energy Plot'),
-            dcc.Graph(id = "plot", style = {"height":"90vh"}), #"width":"120vh"})
+             dbc.Spinner(children=[dcc.Graph(id = "plot", style = {"height":"90vh"}),], size="lg", color="primary", type="border", fullscreen=True,) #"width":"120vh"})
                 ], className='row'),
 
 html.Br(),
@@ -1035,8 +1035,8 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
     if n_clicks:
         # Generate PDF
-        pdf_file = create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
-                                  bol_design_summary, aug_energy_table, power_energy_rte_table)
+        pdf_file = f'/download/{create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+                                  bol_design_summary, aug_energy_table, power_energy_rte_table)}'
         n_clicks = 0
     else:
         # If button is not clicked, do nothing
