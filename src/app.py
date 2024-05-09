@@ -831,9 +831,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
             canvas.restoreState()
 
 
-        outfilename = str(proj_name) + " example.pdf"
-        outfiledir = 'C:/Users/Public/Downloads'
-        pdf_file = os.path.join(outfiledir, outfilename)
+        pdf_file = str(proj_name) + " example.pdf"
 
         # Create a PDF document
         doc = SimpleDocTemplate(
