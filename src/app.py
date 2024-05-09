@@ -548,7 +548,7 @@ html.Br(),
 
     html.Div([
         html.H2(children='Energy Plot'),
-            dcc.Graph(id = "plot", style = {"height":"90vh"}, animate=True), #"width":"120vh"})
+            dcc.Graph(id = "plot", style = {"height":"90vh"}), #"width":"120vh"})
                 ], className='row'),
 
 html.Br(),
