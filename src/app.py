@@ -152,6 +152,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     def get_calendar_loss_table(energy_req):
         df = pd.read_excel('Months to COD.xlsx')
+        
 
         df = df.loc[df['Rated energy (MWh)']>energy_req].iloc[0]
 
@@ -479,7 +480,11 @@ app.layout = html.Div([
         html.Div([html.H5('Duration (hrs):'),
             dcc.Dropdown(id='ddn_duration', options=[
                 {'label': '2', 'value': 2},
-                {'label': '4', 'value': 4}
+                {'label': '3', 'value': 3},
+                {'label': '4', 'value': 4},
+                {'label': '5', 'value': 5},
+                {'label': '6', 'value': 6},
+                {'label': '8', 'value': 8},
                 ], value= 4),
         ], style = {"textAlign":"center"}, className='three columns')
     ], className='row'),
@@ -492,8 +497,10 @@ html.Br(),
         html.Div([
             html.H5('Number of Cycles per Year'),
             dcc.Dropdown(id='ddn_cyc', options=[
+                        {'label': '180', 'value': 180},
                         {'label': '365', 'value': 365},
-                        {'label': '400', 'value': 400}
+                        {'label': '548', 'value': 548},
+                        {'label': '730', 'value': 730},
                         ], value= 365),
         ], style = {"textAlign":"center"}, className='three columns'),
 
@@ -666,7 +673,6 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
     bol_config = table_format(bol_config)
 
-    bill_of_materials_dict = table_format(bill_of_materials)
 
     aug_energy_dict = table_format(aug_energy_table)
     
@@ -959,7 +965,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
 
 
-    return fig, bill_of_materials_dict, aug_energy_dict, power_energy_rte_dict, pdf_file, n_clicks
+    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, pdf_file, n_clicks
 
 
 @app.server.route('/download/<path:path>')
