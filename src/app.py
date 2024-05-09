@@ -32,10 +32,10 @@ from flask import Flask
 server = Flask(__name__)
 
 
-# Keep this out of source code repository - save in a file or a database
-VALID_USERNAME_PASSWORD_PAIRS = {
-    'hello': 'world'
-}
+# # Keep this out of source code repository - save in a file or a database
+# VALID_USERNAME_PASSWORD_PAIRS = {
+#     'hello': 'world'
+# }
 
 
 def calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations):
@@ -47,8 +47,8 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     PCS_model = 'Sungrow SC5000UD-MV-US' # Option to Choose based on PCS.xlsx
 
-    design_margin = 0.01
-    rte_margin = 0.007
+    design_margin = 0.01 #1% Margin
+    rte_margin = 0.01 #1% Margin
 
     if duration == 4:
         aux_energy_percentage = 0.0105
@@ -215,6 +215,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
         if RMU_Required == "IEC":
             cost_pcs = df.loc[df.index == str(PCS_model + " | RMU")]["Cost"][str(PCS_model + " | RMU")]
+            PCS_model = str(PCS_model) + " | RMU"
         else:
             cost_pcs = df.loc[df.index == str(PCS_model)]["Cost"][str(PCS_model)]
 
@@ -333,7 +334,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     bill_of_materials = pd.DataFrame({})
 
-    if RMU_Required == "Yes":
+    if RMU_Required == "IEC":
         pcs_string ="Power Conversion System (PCS) stations \n" \
                      "(includes Inverter, \n Medium Voltage (MV) Transformer \n" \
                       " and Ring Main Unit (RMU))"
@@ -450,10 +451,10 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 app = dash.Dash(server=server, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"])
 server = app.server
 
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
+# auth = dash_auth.BasicAuth(
+#     app,
+#     VALID_USERNAME_PASSWORD_PAIRS
+# )
 
 
 # Define the layout of the website
@@ -587,19 +588,27 @@ html.Br(),
 
 html.Br(),
 
-    # html.Div([
-    #     html.H2(children='Financials'),
-    #     html.Br(),
-    #    dbc.Container([html.P(id = "financial_table"), 
-    #               ],className='six columns'),
-    # ], className='row'),
+html.Br(),
+
+html.Div([
+    # dash.dcc.Store(id = "stored_energy_plot"),
+    dash.dcc.Store(id = "stored_bill_of_materials"),
+    dash.dcc.Store(id = "stored_design_summary"),
+    dash.dcc.Store(id = "stored_losses_table"),
+    dash.dcc.Store(id = "stored_bol_design_summary"),
+    dash.dcc.Store(id = "stored_aug_energy_table"),
+    dash.dcc.Store(id = "stored_power_energy_rte_table"),
+]),
 
 html.Br(),
 
 html.Div([
     html.Button('Generate Technical Proposal', id='generate-pdf-button'),
     html.A('Download Technical Proposal', id='download-pdf', href='', style= {"background-color": "rgb(127, 81, 185)", "color": "white", "padding": "7px 10px"})
-        ])
+        ]),
+
+html.Br(),
+
 
 ])
 
@@ -613,8 +622,13 @@ html.Div([
     Output('aug_energy_table', 'children'),
     Output('power_energy_rte_table', 'children'),
     # Output('financial_table', 'children'),
-    Output('download-pdf', 'href'),
-    Output('generate-pdf-button', 'n_clicks'),
+    # Output('stored_energy_plot', 'data'),
+    Output('stored_bill_of_materials', 'data'),
+    Output('stored_design_summary', 'data'),
+    Output('stored_losses_table', 'data'),
+    Output('stored_bol_design_summary', 'data'),
+    Output('stored_aug_energy_table', 'data'),
+    Output('stored_power_energy_rte_table', 'data'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
      Input('inp_projsize', 'value'),
@@ -626,10 +640,9 @@ html.Div([
      Input('inp_temp', 'value'),
      Input('inp_overize', 'value'),
      Input('inp_projlife', 'value'),
-     Input('inp_aug', 'value'),
-     Input('generate-pdf-button', 'n_clicks')]
+     Input('inp_aug', 'value'),]
 )
-def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, n_clicks):
+def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations):
     fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
     
     def table_format(table):
@@ -678,9 +691,52 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
     
     power_energy_rte_dict = table_format(power_energy_rte_table)
 
-    financial_table_dict = table_format(financial_table)
+    # financial_table_dict = table_format(financial_table)
 
-    def create_pdf_with_header_footer():
+    fig_stored = fig
+
+    bill_of_materials_stored = bill_of_materials.to_dict()
+
+    design_summary_stored = design_summary.to_dict()
+
+    losses_table_stored = losses_table.to_dict()
+
+    bol_design_summary_stored = bol_design_summary.to_dict()
+
+    aug_energy_table_stored = aug_energy_table.to_dict()
+
+    power_energy_rte_table_stored = power_energy_rte_table.to_dict()
+
+    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, bill_of_materials_stored, design_summary_stored, \
+    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored
+
+
+
+@app.callback(
+Output('download-pdf', 'href'),
+Output('generate-pdf-button', 'n_clicks'),
+ [Input('generate-pdf-button', 'n_clicks'),
+  Input('inp_projloct', 'value'),
+  Input('inp_projnm', 'value'),
+  Input('inp_projsize', 'value'),
+  Input('ddn_duration', 'value'),
+  Input('inp_projlife', 'value'),
+#   Input('stored_energy_plot', 'data'),
+  Input('stored_bill_of_materials', 'data'),
+  Input('stored_design_summary', 'data'),
+  Input('stored_losses_table', 'data'),
+  Input('stored_bol_design_summary', 'data'),
+  Input('stored_aug_energy_table', 'data'),
+  Input('stored_power_energy_rte_table', 'data'),
+ ]
+)
+
+def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table):
+    
+    def create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table):
+
         # Define Colors 
         prevalon_lavendar = colors.Color(220/256,207/256,235/256)
         prevalon_purple = colors.Color(127/256,81/256,185/256)
@@ -691,13 +747,13 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
         styles = getSampleStyleSheet()
         style_normal = styles["Normal"]
 
-        folder_path = "images"
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        # folder_path = "images"
+        # if not os.path.exists(folder_path):
+        #     os.makedirs(folder_path)
 
-        # Save the Plotly graph as an image file
-        image_path = os.path.join(folder_path, "plot.png")
-        pio.write_image(fig, image_path, height = 650, width=1400)
+        # # Save the Plotly graph as an image file
+        # image_path = os.path.join(folder_path, "plot.png")
+        # pio.write_image(fig, image_path, height = 650, width=1400)
 
         # Define header and footer function with image from URL
         def header(canvas, doc):
@@ -780,32 +836,50 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
             pdf_file,
             pagesize=letter,
         )
-        
+            #     pdf_file = str(proj_name) + "example.pdf"
+    #     doc = SimpleDocTemplate(pdf_file, pagesize=letter)
         # Table data
+
+        bill_of_materials = pd.DataFrame.from_dict(bill_of_materials)
+
         bill_of_materials_data = []
         bill_of_materials_data.append(bill_of_materials.columns.tolist())
         for i in bill_of_materials.values.tolist():
             bill_of_materials_data.append(i)
+        
+
+        design_summary = pd.DataFrame.from_dict(design_summary)
 
         design_summary_data = []
         design_summary_data.append(design_summary.columns.tolist())
         for i in design_summary.values.tolist():
             design_summary_data.append(i)
 
+        losses_table = pd.DataFrame.from_dict(losses_table)
+
         losses_table_data = []
         losses_table_data.append(losses_table.columns.tolist())
         for i in losses_table.values.tolist():
             losses_table_data.append(i)
+
+
+        bol_design_summary = pd.DataFrame.from_dict(bol_design_summary)
 
         bol_design_summary_data = []
         bol_design_summary_data.append(bol_design_summary.columns.tolist())
         for i in bol_design_summary.values.tolist():
             bol_design_summary_data.append(i)
 
+
+        aug_energy_table = pd.DataFrame.from_dict(aug_energy_table)
+
         aug_energy_data = []
         aug_energy_data.append(aug_energy_table.columns.tolist())
         for i in aug_energy_table.values.tolist():
             aug_energy_data.append(i)
+
+
+        power_energy_rte_table = pd.DataFrame.from_dict(power_energy_rte_table)
 
         power_energy_rte_data = []
         power_energy_rte_data.append(power_energy_rte_table.columns.tolist())
@@ -864,7 +938,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
         content.append(Paragraph("The table below describes the hardware included within Prevalon’s scope at the beginning of life:", style_normal))
 
         content.append(Paragraph("<br/><br/>", style_normal))
-
+        
         table = Table(bill_of_materials_data, colWidths=[160, 330, 60], rowHeights=[20, 40, 60, 20, 30])
         table_style = table_styles(bill_of_materials_data)
         table.setStyle(TableStyle(table_style))
@@ -940,7 +1014,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
                                 the "  + str('{:,.0f}'.format(project_life)) + "-year Project Life.", style_normal))
 
         # Add image to PDF
-        content.append(PlatypusImage(image_path, width=600, height=320))
+        # content.append(PlatypusImage(image_path, width=600, height=320))
 
         content.append(Paragraph("<br/><br/>", style_normal))
         content.append(Paragraph("5. Estimated BESS Annual Performance", section_paragraph_style))
@@ -957,15 +1031,15 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
     if n_clicks:
         # Generate PDF
-        pdf_file = f'/download/{create_pdf_with_header_footer()}'
+        pdf_file = f'/download/{create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+                                  bol_design_summary, aug_energy_table, power_energy_rte_table)}'
         n_clicks = 0
     else:
         # If button is not clicked, do nothing
         pdf_file = ''
 
 
-
-    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, pdf_file, n_clicks
+    return pdf_file, n_clicks
 
 
 @app.server.route('/download/<path:path>')
