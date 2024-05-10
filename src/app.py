@@ -556,7 +556,7 @@ html.Br(),
 
     html.Div([
         html.H2(children='Energy Plot'),
-             dbc.Spinner(children=[dcc.Graph(id = "plot", style = {"height":"90vh"}),], size="lg", color="primary", type="border", fullscreen=True,) #"width":"120vh"})
+             dbc.Spinner(children=[dcc.Graph(id = "plot", style = {"height":"90vh"}),], size="lg", color="primary", type="border", fullscreen=False,) #"width":"120vh"})
                 ], className='row'),
 
 html.Br(),
