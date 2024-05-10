@@ -1,7 +1,7 @@
 import dash
 from dash.dependencies import Input, Output
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import pandas as pd
 from scipy import interpolate
 import math
@@ -442,7 +442,8 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     
 
 
-    return fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary
+    return fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, \
+        bol_design_summary
 
 
 
@@ -591,7 +592,7 @@ html.Br(),
 html.Br(),
 
 html.Div([
-    # dash.dcc.Store(id = "stored_energy_plot"),
+    dash.dcc.Store(id = "stored_energy_plot"),
     dash.dcc.Store(id = "stored_bill_of_materials"),
     dash.dcc.Store(id = "stored_design_summary"),
     dash.dcc.Store(id = "stored_losses_table"),
@@ -622,7 +623,7 @@ html.Br(),
     Output('aug_energy_table', 'children'),
     Output('power_energy_rte_table', 'children'),
     # Output('financial_table', 'children'),
-    # Output('stored_energy_plot', 'data'),
+    Output('stored_energy_plot', 'data'),
     Output('stored_bill_of_materials', 'data'),
     Output('stored_design_summary', 'data'),
     Output('stored_losses_table', 'data'),
@@ -707,7 +708,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
     power_energy_rte_table_stored = power_energy_rte_table.to_dict()
 
-    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, bill_of_materials_stored, design_summary_stored, \
+    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
     losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored
 
 
@@ -721,7 +722,7 @@ Output('generate-pdf-button', 'n_clicks'),
   Input('inp_projsize', 'value'),
   Input('ddn_duration', 'value'),
   Input('inp_projlife', 'value'),
-#   Input('stored_energy_plot', 'data'),
+  Input('stored_energy_plot', 'data'),
   Input('stored_bill_of_materials', 'data'),
   Input('stored_design_summary', 'data'),
   Input('stored_losses_table', 'data'),
@@ -731,10 +732,10 @@ Output('generate-pdf-button', 'n_clicks'),
  ]
 )
 
-def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
                                     bol_design_summary, aug_energy_table, power_energy_rte_table):
     
-    def create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+    def create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
                                     bol_design_summary, aug_energy_table, power_energy_rte_table):
 
         # Define Colors 
@@ -754,6 +755,30 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         # # Save the Plotly graph as an image file
         # image_path = os.path.join(folder_path, "plot.png")
         # pio.write_image(fig, image_path, height = 650, width=1400)
+        print(fig['data'])
+
+        fig = go.Figure(fig['data'])
+
+        fig.update_layout(
+        yaxis_title= 'Energy (MWh)',
+        xaxis_title= 'End of Year',
+        plot_bgcolor = "white",
+        legend=dict(
+                    x=0.8,
+                    y=-0.25,
+                    traceorder="reversed",
+                    title_font_family="arial",
+                    font=dict(
+                        family="arial",
+                        size=12,
+                        color="black"),
+                    bgcolor="white",
+                    bordercolor="Black",
+                    borderwidth=1.5
+                    ),
+        font=dict(family="arial", size=18))
+
+        fig.write_image("images/plot.png", height = 650, width=1400)
 
         # Define header and footer function with image from URL
         def header(canvas, doc):
@@ -1016,7 +1041,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
                                 the "  + str('{:,.0f}'.format(project_life)) + "-year Project Life.", style_normal))
 
         # Add image to PDF
-        # content.append(PlatypusImage(image_path, width=600, height=320))
+        content.append(PlatypusImage('images/plot.png', width=600, height=320))
 
         content.append(Paragraph("<br/><br/>", style_normal))
         content.append(Paragraph("5. Estimated BESS Annual Performance", section_paragraph_style))
@@ -1033,7 +1058,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
     if n_clicks:
         # Generate PDF
-        pdf_file = '/download/{}'.format(create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, bill_of_materials, design_summary, losses_table, \
+        pdf_file = '/download/{}'.format(create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
                                   bol_design_summary, aug_energy_table, power_energy_rte_table))
         n_clicks = 0
         n_clicks = 0
