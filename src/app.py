@@ -440,10 +440,11 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
                     ),
         font=dict(family="arial", size=18))
     
-
+    plot_title = str(proj_location) + " | " + str(proj_name) + " | " + str(energy_req) + " MWh Energy Capacity @ "+ str(point_of_measurement) + " | " + str(number_cycles) + " cycles/year"
+    y_axis_range = [str(power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001 - power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001/10), str(batt_nameplate*optimized_number_of_stacks*0.001)]
 
     return fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, \
-        bol_design_summary
+        bol_design_summary, plot_title, y_axis_range
 
 
 
@@ -599,6 +600,8 @@ html.Div([
     dash.dcc.Store(id = "stored_bol_design_summary"),
     dash.dcc.Store(id = "stored_aug_energy_table"),
     dash.dcc.Store(id = "stored_power_energy_rte_table"),
+    dash.dcc.Store(id = "stored_plot_title"),
+    dash.dcc.Store(id = "stored_y_axis_range"),
 ]),
 
 html.Br(),
@@ -630,6 +633,8 @@ html.Br(),
     Output('stored_bol_design_summary', 'data'),
     Output('stored_aug_energy_table', 'data'),
     Output('stored_power_energy_rte_table', 'data'),
+    Output('stored_plot_title'),
+    Output('stored_y_axis_range'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
      Input('inp_projsize', 'value'),
@@ -644,7 +649,7 @@ html.Br(),
      Input('inp_aug', 'value'),]
 )
 def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations):
-    fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
+    fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
     
     def table_format(table):
         return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -709,7 +714,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
     power_energy_rte_table_stored = power_energy_rte_table.to_dict()
 
     return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
-    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored
+    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range
 
 
 
@@ -729,14 +734,17 @@ Output('generate-pdf-button', 'n_clicks'),
   Input('stored_bol_design_summary', 'data'),
   Input('stored_aug_energy_table', 'data'),
   Input('stored_power_energy_rte_table', 'data'),
+  Input('stored_plot_title', 'data'),
+  Input('stored_y_axis_range', 'data'),
+
  ]
 )
 
 def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table):
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range):
     
     def create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table):
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range):
 
         # Define Colors 
         prevalon_lavendar = colors.Color(220/256,207/256,235/256)
@@ -759,9 +767,14 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
         fig = go.Figure(fig['data'])
 
-        fig.update_layout(
+        fig.update_layout(title={"text": plot_title, "x" : 0.5, "y" : 0.9},#,"y"：8.97，"x"：8.5，"anchor": "center","yanchor": "top"}, 
+        
+        xaxis=dict(showgrid=False, zeroline=True, showline=True, mirror= True, gridcolor='#bdbdbd', gridwidth=1, zerolinecolor='#969696', zerolinewidth=2, linecolor='#636363', linewidth=2, showticklabels=True, dtick = 1, range=["-0.5", str(project_life+0.5)]),
+        yaxis=dict(showgrid=True, zeroline=True, showline=True, mirror=True, gridcolor='#bdbabd', gridwidth=1, zerolinecolor='#969696', zerolinewidth=2, linecolor='#636363', linewidth=2, showticklabels=True, range=y_axis_range),
+        xaxis_title='End of Year',
         yaxis_title= 'Energy (MWh)',
-        xaxis_title= 'End of Year',
+             
+
         plot_bgcolor = "white",
         legend=dict(
                     x=0.8,
@@ -777,7 +790,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
                     borderwidth=1.5
                     ),
         font=dict(family="arial", size=18))
-
+    
         fig.write_image("plot.png", height = 650, width=1400)
 
         # Define header and footer function with image from URL
