@@ -755,7 +755,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         # # Save the Plotly graph as an image file
         # image_path = os.path.join(folder_path, "plot.png")
         # pio.write_image(fig, image_path, height = 650, width=1400)
-        print(fig['data'])
+        # print(fig['data'])
 
         fig = go.Figure(fig['data'])
 
@@ -778,7 +778,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
                     ),
         font=dict(family="arial", size=18))
 
-        fig.write_image("images/plot.png", height = 650, width=1400)
+        fig.write_image("plot.png", height = 650, width=1400)
 
         # Define header and footer function with image from URL
         def header(canvas, doc):
@@ -1041,7 +1041,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
                                 the "  + str('{:,.0f}'.format(project_life)) + "-year Project Life.", style_normal))
 
         # Add image to PDF
-        content.append(PlatypusImage('images/plot.png', width=600, height=320))
+        content.append(PlatypusImage('plot.png', width=600, height=320))
 
         content.append(Paragraph("<br/><br/>", style_normal))
         content.append(Paragraph("5. Estimated BESS Annual Performance", section_paragraph_style))
