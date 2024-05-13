@@ -27,6 +27,8 @@ import plotly.io as pio
 import dash_auth
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from flask import Flask
+from dash.exceptions import PreventUpdate
+
 
 
 server = Flask(__name__)
@@ -338,11 +340,16 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
         pcs_string ="Power Conversion System (PCS) stations \n" \
                      "(includes Inverter, \n Medium Voltage (MV) Transformer \n" \
                       " and Ring Main Unit (RMU))"
+        
+        pcs_description = "MVA Inverter, mineral oil-filled transformer and a RMU"
+
     else:
         pcs_string ="Power Conversion System (PCS) stations \n" \
                 "(includes Inverter and \n Medium Voltage (MV) Transformer)"
+        
+        pcs_description = "MVA Inverter and mineral oil-filled transformer"
 
-    bill_of_materials["Component"] = "LFP Cooled \nBattery Enclosures", \
+    bill_of_materials["Component"] = "LFP Liquid Cooled \nBattery Enclosures", \
                                      pcs_string, \
                                      "EMS / SCADA", \
                                      "Master Fire Panel"
@@ -350,7 +357,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     bill_of_materials["Description"] = "Standard-sized ISO 20’ NEMA 3R enclosure with battery modules pre-installed, featuring: \n" \
                                         " 1) Up to " + '{:,.2f}'.format(max_racks_per_container*batt_nameplate*0.001) + "MWh DC Nameplate Energy per enclosure.  \n" \
                                         " 2) Dimensions: 20’ (L) x 9.5’ (H) x 8’ (W) or 6,058mm (L) x 2,896mm (H) x 2,438mm (W)", \
-                                        "1) Integrated skid containing "+ '{:,.0f}'.format(PCS_kVA*0.001) +"MVA Inverter and mineral oil-filled transformer -  \n" \
+                                        "1) Integrated skid containing "+ '{:,.0f}'.format(PCS_kVA*0.001) + pcs_description + " \n" \
                                         "2) AC Output Power: " + '{:,.0f}'.format(PCS_kVA_at_max_site_temp) + "kVA @ "+ '{:,.0f}'.format(max_site_temp) +" deg C  \n" \
                                         "3) " + '{:,.0f}'.format(PCS_kVA) + "kVA " +'{:,.2f}'.format(PCS_AC_Voltage*0.001) + "kV/34.5kV mineral oil (PCB free) filled MV Transformer\n" \
                                         "4) Dimensions: 20’ (L) x 9.5’ (H) x 8’ (W) or 6,058mm (L) x 2,896mm (H) x 2,438mm (W)", \
@@ -403,7 +410,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
                                     "BESS BOL AC Usable Energy net of Aux Energy at POM (kWh AC)"
     
     bol_design_summary["Value"] = '{:,.0f}'.format(optimized_number_of_containers), '{:,.0f}'.format(optimized_number_of_pcs), PCS_model, '{:,.2f}'.format(aux_power*1000), \
-                                '{:,.2f}'.format(aux_energy_per_stack*optimized_number_of_stacks) , '{:,.2f}'.format(float(power_energy_rte_table["Usable AC Energy at POM (MWh)"][0])*1000)
+                                '{:,.2f}'.format(aux_energy_per_stack*optimized_number_of_stacks) , '{:,.2f}'.format((float(power_energy_rte_table["Usable AC Energy at POM (MWh)"][0].replace(',', ''))*1000))
 
                                         
 
@@ -458,29 +465,32 @@ server = app.server
 #     VALID_USERNAME_PASSWORD_PAIRS
 # )
 
+input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
+
+button_style = {'border-radius': '4px', 'font-size': '1.25rem', 'border': '1px solid navy','background-color': 'dodgerblue', 'color': 'white'}
 
 # Define the layout of the website
 app.layout = html.Div([
-    
-    html.H1(children='Level 1 Sizing Tool', style={'textAlign': 'center'}),
+
+    html.H1(children='Level 1 Sizing Tool', style={'textAlign': 'center', 'font-family':'Helvetica', 'font-size': '3.5em'}),
                 html.Br(),
     
     
     html.Div([
         
-        html.Div([html.H5("Project Location"),
+        html.Div([html.H5("Project Location", style = input_label_style),
                   dcc.Input(id='inp_projloct', type='text', value="Lake Mary"),
-                  ], style = {"textAlign":"center"}, className='three columns'),
+                  ], style = {"textAlign":"center", 'font-size': '1em'}, className='two columns'),
         
-        html.Div([html.H5("Project Name"),
+        html.Div([html.H5("Project Name", style = input_label_style),
                   dcc.Input(id='inp_projnm', type='text', value="Pilot Project"),
-                  ],style = {"textAlign":"center"} ,className='three columns'),
+                  ],style = {"textAlign":"center"} ,className='two columns'),
         
-        html.Div([html.H5('Project Size (MW)'),
+        html.Div([html.H5('Project Size (MW)', style = input_label_style),
                   dcc.Input(id='inp_projsize', type='number', value=100),
-                  ], style = {"textAlign":"center"}, className='three columns'),
+                  ], style = {"textAlign":"center"}, className='two columns'),
         
-        html.Div([html.H5('Duration (hrs):'),
+        html.Div([html.H5(children = 'Duration (hrs):', style = input_label_style),
             dcc.Dropdown(id='ddn_duration', options=[
                 {'label': '2', 'value': 2},
                 {'label': '3', 'value': 3},
@@ -489,106 +499,132 @@ app.layout = html.Div([
                 {'label': '6', 'value': 6},
                 {'label': '8', 'value': 8},
                 ], value= 4),
-        ], style = {"textAlign":"center"}, className='three columns')
-    ], className='row'),
-
-html.Br(),
-
-
-    html.Div([
+        ], style = {"textAlign":"center"}, className='two columns'),
 
         html.Div([
-            html.H5('Number of Cycles per Year'),
+            html.H5(children = 'Number of Cycles per Year', style = input_label_style),
             dcc.Dropdown(id='ddn_cyc', options=[
                         {'label': '180', 'value': 180},
                         {'label': '365', 'value': 365},
                         {'label': '548', 'value': 548},
                         {'label': '730', 'value': 730},
                         ], value= 365),
-        ], style = {"textAlign":"center"}, className='three columns'),
+        ], style = {"textAlign":"center", 'font-size': '1em'}, className='two columns'),
 
         html.Div([
-            html.H5('Point of Measurement'),
+            html.H5('Point of Measurement', style = input_label_style),
             dcc.Dropdown(id='ddn_pom', options=[
                 {'label': 'AC Terminals of Inverter', 'value': 'AC Terminals of Inverter'},
                 {'label': 'High Side of Medium Voltage Transformer', 'value': 'High Side of Medium Voltage Transformer'},
                 {'label': 'Medium Voltage POM', 'value': 'Medium Voltage POM'},
                 {'label': 'High Side of HV Transformer', 'value': 'High Side of HV Transformer'},
                 {'label': 'High Voltage POM', 'value': 'High Voltage POM'},
-                ], value= 'High Side of HV Transformer'),
-        ], style = {"textAlign":"center"}, className='three columns'),
-          
-        html.Div([html.H5('Compliance Code'),
-            dcc.Dropdown(id='ddn_rmu', options=[
-                        {'label': 'UL', 'value': 'UL'},
-                        {'label': 'IEC', 'value': 'IEC'}
-                        ], value= 'UL'),
-                        ],style = {"textAlign":"center"}, className='three columns'),
+                ], value= 'High Side of HV Transformer', style = {'font-size': '0.94em'}),
+        ], style = {"textAlign":"center"}, className='two columns'),
 
-        html.Div([html.H5('Power Factor'),
-                    dcc.Dropdown(id='ddn_pf', options=[
-                                {'label': '0.9', 'value': 0.90},
-                                {'label': '0.95', 'value': 0.95}
-                                ], value= 0.95),]
-                ,style = {"textAlign":"center"}, className='three columns'),    
     ], className='row'),
 
 html.Br(),
 
-  html.Div([
 
-        html.Div([html.H5('Temperature (deg C)'),
-                dcc.Input(id='inp_temp', type='number', value=40),
-                ], style = {"textAlign":"center"}, className='three columns'),
+    html.Div([
+          
+        html.Div([html.H5('Compliance Code', style = input_label_style),
+            dcc.Dropdown(id='ddn_rmu', options=[
+                        {'label': 'UL', 'value': 'UL'},
+                        {'label': 'IEC', 'value': 'IEC'}
+                        ], value= 'UL'),
+                        ],style = {"textAlign":"center"}, className='two columns'),
 
-        html.Div([html.H5('BOL Oversize (years)'),
-                dcc.Input(id='inp_overize', type='number', value=3),], style = {"textAlign":"center"}, className='three columns'),
+        html.Div([html.H5('Power Factor', style = input_label_style),
+                    dcc.Dropdown(id='ddn_pf', options=[
+                                {'label': '0.9', 'value': 0.90},
+                                {'label': '0.95', 'value': 0.95}
+                                ], value= 0.95),]
+                ,style = {"textAlign":"center"}, className='two columns'),
 
-        html.Div([html.H5("Project Life (years)"),
+
+        html.Div([html.H5('Max Site Temperature (deg C)', style = input_label_style),
+                dcc.Input(id='inp_temp', type='number', value=40, max=50),
+                ], style = {"textAlign":"center"}, className='two columns'),
+
+        html.Div([html.H5('BOL Oversize (until End of Year)', style = input_label_style),
+                dcc.Input(id='inp_overize', type='number', value=3),], style = {"textAlign":"center"}, className='two columns'),
+
+        html.Div([html.H5("Project Life (years)", style = input_label_style),
                   dcc.Input(id='inp_projlife', type='number', value=20),
-                  ], style = {"textAlign":"center"},className='three columns'),
+                  ], style = {"textAlign":"center"},className='two columns'),
 
-        html.Div([html.H5("Number of Augmentations"),
+        html.Div([html.H5("Number of Augmentations", style = input_label_style),
                   dcc.Input(id='inp_aug', type='number', value=4),]
-                 ,style = {"textAlign":"center"} ,className='three columns'),
+                 ,style = {"textAlign":"center"} ,className='two columns'),
 
-                ], className='row'),
 
-html.Br(),
+    ], className='row'),
 
-    html.Div([
-        html.H2(children='Energy Plot'),
-             dbc.Spinner(children=[dcc.Graph(id = "plot", style = {"height":"90vh"}),], size="lg", color="primary", type="border", fullscreen=False,) #"width":"120vh"})
-                ], className='row'),
+    html.Br(),
 
-html.Br(),
+    html.Br(),
 
     html.Div([
-        html.H2(children='BOL Configuration Table'),
-        html.Br(),
+        
+        html.Div([html.H5("")], className='five columns'),
+        
+        html.Button('Run Sizing', id='generate_sizing', className='two columns', style = button_style), 
+
+
+
+    ]),
+    
+    
+
+    html.Br(),
+
+    html.Br(),
+
+
+    html.Div([
+        html.Div([html.H5("")], className='one columns'),
+        html.H2(children='Energy Plot', className='ten columns'),
+
+    ], className='row'),
+
+    html.Div([
+        html.Div([html.H5("")], className='one columns'),
+        dcc.Graph(id = "plot", style = {"height":"80vh"},  className='ten columns'),
+
+    ], className='row'),
+
+    html.Div([
+        html.Div([html.H5("")], className='one columns'),
+        html.H2(children='BOL Configuration Table', className='four columns'),
+        html.H2(children='Augmentation Table', className='four columns'),       
+                ], className='row'),
+
+    html.Div([
+        html.Div([html.H5("")], className='one columns'),
         dbc.Container([html.P(id = "bol_config"), 
-                    ], fluid=True, className='six columns'), 
-                ],  className='row'),
-
-html.Br(),
-
-    html.Div([
-        html.H2(children='Augmentation Table'),
-        html.Br(),
+                    ], className='three columns'),
+        html.Div([html.H5("")], className='one columns'),        
         dbc.Container([html.P(id = "aug_energy_table"),
-                    ], className='six columns'),
-                ],  className='row'),
+                    ], className='three columns'),
+                ], className='row'),
+
+  
 
 html.Br(),
 
-    html.Div([
-        html.H2(children='Power Energy and RTE Table'),
-        html.Br(),
+html.Div([
+        html.Div([html.H5("")], className='three columns'),
+        html.H2(children='Power Energy and RTE Table', className='four columns'),     
+], className='row'), 
+
+html.Div([
+        html.Div([html.H5("")], className='three columns'),
         dbc.Container([html.P(id = "power_energy_rte_table"), 
-                        ], className='six columns'),
-                ], style = {'center': "auto"}, className='row'),
-
-html.Br(),
+                        ], className='five columns'),
+            
+                ],  className='row'),
 
 html.Br(),
 
@@ -607,10 +643,12 @@ html.Div([
 html.Br(),
 
 html.Div([
-    html.Button('Generate Technical Proposal', id='generate-pdf-button'),
-    html.A('Download Technical Proposal', id='download-pdf', href='', style= {"background-color": "rgb(127, 81, 185)", "color": "white", "padding": "7px 10px"})
+    html.Div([html.H5("")], className='three columns'),
+    html.Button('Generate Technical Proposal', id='generate-pdf-button', style=button_style, className='three columns'),
+    html.A('Download Technical Proposal', id='download-pdf', href='', className='three columns', style= {"textAlign":"center", 'border-radius': '4px', 'border': '1px solid navy','background-color': 'rgb(127, 81, 185)', 'color': 'white', 'height': '38px', 'padding': '8px'})
         ]),
 
+html.Br(),
 html.Br(),
 
 
@@ -635,6 +673,7 @@ html.Br(),
     Output('stored_power_energy_rte_table', 'data'),
     Output('stored_plot_title', 'data'),
     Output('stored_y_axis_range', 'data'),
+    Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
      Input('inp_projsize', 'value'),
@@ -646,76 +685,84 @@ html.Br(),
      Input('inp_temp', 'value'),
      Input('inp_overize', 'value'),
      Input('inp_projlife', 'value'),
-     Input('inp_aug', 'value'),]
+     Input('inp_aug', 'value'),
+     Input('generate_sizing', 'n_clicks'),]
 )
-def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations):
-    fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
+def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, n_clicks):
     
-    def table_format(table):
-        return dash.dash_table.DataTable(table.to_dict('records', index=True), 
-                                            style_data={
-                                                        'color': 'black',
-                                                        'backgroundColor': 'white', 
-                                                        'font-family':'arial',
-                                                        'font-size': '11px',
-                                                        'border': '1px solid black',
-                                                        'textAlign': 'center',
-                                                        },
-                                            style_data_conditional=[
-                                                                    {
-                                                                    'if': {'row_index': 'odd'},
-                                                                    'backgroundColor': 'rgb(220, 207, 235)',
-                                                                    }, 
-
-                                                                    {
-                                                                    'if': {'column_id': 'Total Cost per component ($)', 'row_index': 3},
-                                                                    'fontWeight': 'bold',
-                                                                    },
-
-                                                                    {
-                                                                    'if': {'column_id': 'Component', 'row_index': 3},
-                                                                    'fontWeight': 'bold',
-                                                                    },
-
-                                                                ],
-
-                                            style_header={
-                                                            'backgroundColor': 'rgb(127, 81, 185)',
-                                                            'color': 'white',
-                                                            'fontWeight': 'bold',
-                                                            'font-family':'Helvetica',
-                                                            'font-size': '12px',
+    if n_clicks:
+    
+        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
+    
+        def table_format(table):
+            return dash.dash_table.DataTable(table.to_dict('records', index=True), 
+                                                style_data={
+                                                            'color': 'black',
+                                                            'backgroundColor': 'white', 
+                                                            'font-family':'arial',
+                                                            'font-size': '11px',
                                                             'border': '1px solid black',
                                                             'textAlign': 'center',
-                                                        })
-         
+                                                            },
+                                                style_data_conditional=[
+                                                                        {
+                                                                        'if': {'row_index': 'odd'},
+                                                                        'backgroundColor': 'rgb(220, 207, 235)',
+                                                                        }, 
 
-    bol_config = table_format(bol_config)
+                                                                        {
+                                                                        'if': {'column_id': 'Total Cost per component ($)', 'row_index': 3},
+                                                                        'fontWeight': 'bold',
+                                                                        },
+
+                                                                        {
+                                                                        'if': {'column_id': 'Component', 'row_index': 3},
+                                                                        'fontWeight': 'bold',
+                                                                        },
+
+                                                                    ],
+
+                                                style_header={
+                                                                'backgroundColor': 'rgb(127, 81, 185)',
+                                                                'color': 'white',
+                                                                'fontWeight': 'bold',
+                                                                'font-family':'Helvetica',
+                                                                'font-size': '12px',
+                                                                'border': '1px solid black',
+                                                                'textAlign': 'center',
+                                                            })
+            
+
+        bol_config = table_format(bol_config)
 
 
-    aug_energy_dict = table_format(aug_energy_table)
-    
-    power_energy_rte_dict = table_format(power_energy_rte_table)
+        aug_energy_dict = table_format(aug_energy_table)
+        
+        power_energy_rte_dict = table_format(power_energy_rte_table)
 
-    # financial_table_dict = table_format(financial_table)
+        # financial_table_dict = table_format(financial_table)
 
-    fig_stored = fig
+        fig_stored = fig
 
-    bill_of_materials_stored = bill_of_materials.to_dict()
+        bill_of_materials_stored = bill_of_materials.to_dict()
 
-    design_summary_stored = design_summary.to_dict()
+        design_summary_stored = design_summary.to_dict()
 
-    losses_table_stored = losses_table.to_dict()
+        losses_table_stored = losses_table.to_dict()
 
-    bol_design_summary_stored = bol_design_summary.to_dict()
+        bol_design_summary_stored = bol_design_summary.to_dict()
 
-    aug_energy_table_stored = aug_energy_table.to_dict()
+        aug_energy_table_stored = aug_energy_table.to_dict()
 
-    power_energy_rte_table_stored = power_energy_rte_table.to_dict()
+        power_energy_rte_table_stored = power_energy_rte_table.to_dict()
 
-    return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
-    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range
 
+        n_clicks = 0
+        return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
+    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, n_clicks
+
+    else:
+        raise PreventUpdate
 
 
 @app.callback(
@@ -869,7 +916,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
             canvas.restoreState()
 
 
-        pdf_file = str(proj_name) + " example.pdf"
+        pdf_file = "Technical Proposal " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
 
         # Create a PDF document
         doc = SimpleDocTemplate(
@@ -1073,7 +1120,6 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         # Generate PDF
         pdf_file = '/download/{}'.format(create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
                                   bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range))
-        n_clicks = 0
         n_clicks = 0
     else:
         # If button is not clicked, do nothing
