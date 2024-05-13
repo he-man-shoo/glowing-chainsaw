@@ -34,10 +34,11 @@ from dash.exceptions import PreventUpdate
 server = Flask(__name__)
 
 
-# # Keep this out of source code repository - save in a file or a database
-# VALID_USERNAME_PASSWORD_PAIRS = {
-#     'hello': 'world'
-# }
+# Keep this out of source code repository - save in a file or a database
+VALID_USERNAME_PASSWORD_PAIRS = {
+    'hello': 'world',
+    'prevalon':'tool'
+}
 
 
 def calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations):
@@ -451,7 +452,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     y_axis_range = [str(power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001 - power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001/10), str(batt_nameplate*optimized_number_of_stacks*0.001)]
 
     return fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, \
-        bol_design_summary, plot_title, y_axis_range
+        bol_design_summary, plot_title, y_axis_range, months_to_COD
 
 
 
@@ -460,10 +461,10 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 app = dash.Dash(server=server, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"])
 server = app.server
 
-# auth = dash_auth.BasicAuth(
-#     app,
-#     VALID_USERNAME_PASSWORD_PAIRS
-# )
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
 
 input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
 
@@ -638,6 +639,7 @@ html.Div([
     dash.dcc.Store(id = "stored_power_energy_rte_table"),
     dash.dcc.Store(id = "stored_plot_title"),
     dash.dcc.Store(id = "stored_y_axis_range"),
+    dash.dcc.Store(id = "stored_months_to_COD"),
 ]),
 
 html.Br(),
@@ -673,6 +675,7 @@ html.Br(),
     Output('stored_power_energy_rte_table', 'data'),
     Output('stored_plot_title', 'data'),
     Output('stored_y_axis_range', 'data'),
+    Output('stored_months_to_COD', 'data'),
     Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
@@ -692,7 +695,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
     
     if n_clicks:
     
-        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
+        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range, months_to_COD = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
     
         def table_format(table):
             return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -759,7 +762,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
         n_clicks = 0
         return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
-    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, n_clicks
+    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, months_to_COD, n_clicks
 
     else:
         raise PreventUpdate
@@ -783,15 +786,15 @@ Output('generate-pdf-button', 'n_clicks'),
   Input('stored_power_energy_rte_table', 'data'),
   Input('stored_plot_title', 'data'),
   Input('stored_y_axis_range', 'data'),
-
+  Input('stored_months_to_COD', 'data'),
  ]
 )
 
 def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range):
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD):
     
     def create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range):
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD):
 
         # Define Colors 
         prevalon_lavendar = colors.Color(220/256,207/256,235/256)
@@ -1073,6 +1076,12 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
         content.append(Paragraph("<br/><br/>", style_normal))
 
+        content.append(Paragraph("Note - BOL design accounts for " + months_to_COD + " of calendar degradation, an allowance for transportation, \
+                                 installation, and commissioning. Should there be a need for additional time Prevalon reserves the right to make \
+                                 changes to the BOL design and requisite commercial remedy.", style_normal))
+        
+        content.append(Paragraph("<br/><br/>", style_normal))
+
         content.append(Paragraph("3. System Augmentation Plan", section_paragraph_style))
 
         content.append(Paragraph("<br/><br/>", style_normal))
@@ -1087,14 +1096,16 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
         
         content.append(Paragraph("<br/><br/>", style_normal))
+        content.append(PageBreak())
+
 
         table = Table(aug_energy_data)
         table_style = table_styles(aug_energy_data)
         table.setStyle(TableStyle(table_style))
         content.append(table)
 
-        content.append(PageBreak())
-        
+        content.append(Paragraph("<br/><br/>", style_normal))
+
         content.append(Paragraph("4. BESS Annual Energy Capacity", section_paragraph_style))
 
         content.append(Paragraph("<br/><br/> The curve below shows AC Usable Energy including auxiliary consumption at POM throughout \
@@ -1104,6 +1115,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         content.append(PlatypusImage('plot.png', width=600, height=320))
 
         content.append(Paragraph("<br/><br/>", style_normal))
+        content.append(PageBreak())
         content.append(Paragraph("5. Estimated BESS Annual Performance", section_paragraph_style))
         content.append(Paragraph("<br/><br/>", style_normal))
 
@@ -1119,7 +1131,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
     if n_clicks:
         # Generate PDF
         pdf_file = '/download/{}'.format(create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                  bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range))
+                                  bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD))
         n_clicks = 0
     else:
         # If button is not clicked, do nothing
