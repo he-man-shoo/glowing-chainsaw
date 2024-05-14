@@ -36,8 +36,11 @@ server = Flask(__name__)
 
 # Keep this out of source code repository - save in a file or a database
 VALID_USERNAME_PASSWORD_PAIRS = {
-    'hello': 'world',
-    'prevalon':'tool'
+    'greek': 'spartans',
+    'irish':'whiskey',
+    'rocky':'mountains',
+    'dim':'sum',
+    'pav':'bhaji',
 }
 
 
@@ -285,6 +288,8 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     aug_energy_table = pd.DataFrame({})
 
+    aug_energy_start_of_year = [None]*project_life
+
     year_of_next_augmentation = 0
 
     if number_of_augmentations > 0 :
@@ -307,9 +312,13 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
             augmentation_energy_required = (energy_req*1000 - power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][year_of_next_augmentation])/get_deg_curve(battery_model,number_cycles,duration,r_SOC)["Degradation Curve"][year_of_next_augmentation - year_of_augmentation]
             augmentation_energy_nameplate = augmentation_energy_required/get_deg_curve(battery_model,number_cycles,duration,r_SOC)["Degradation Curve"][0]*batt_nameplate/batt_usable_ac
             
+            
+
             power_energy_table['Net Energy after Augmentation ' + str(i+1) +' at '+ str(point_of_measurement)+ ' (kWh)'] = augmentation_energy_required*get_deg_curve(battery_model,number_cycles,duration,r_SOC)["Degradation Curve"]
             power_energy_table['Net Energy after Augmentation ' + str(i+1) +' at '+ str(point_of_measurement)+ ' (kWh)'] = power_energy_table['Net Energy after Augmentation ' + str(i+1) +' at '+ str(point_of_measurement)+ ' (kWh)'].shift(year_of_augmentation, fill_value = 0)
             power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'] = power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'] + power_energy_table['Net Energy after Augmentation ' + str(i+1) +' at '+ str(point_of_measurement)+ ' (kWh)']
+
+            aug_energy_start_of_year[year_of_augmentation-1] = (power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][year_of_augmentation-1] + augmentation_energy_required)*0.001 
 
             aug_energy_table.loc[i, "Augmentation Number"] = i+1
             aug_energy_table.loc[i, "Augmentation Year"] = year_of_augmentation
@@ -419,7 +428,10 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     x_param = power_energy_table[:project_life+1].index.values.tolist()
     y_param = power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][:project_life+1]*0.001
     fig = go.Figure()
+
     fig.add_trace(go.Scatter(x = x_param, y = y_param, name= "Net Energy @ POM", mode = "markers", marker=dict(symbol = "circle", color='purple', size = 10)))
+    
+    fig.add_trace(go.Scatter(x = x_param, y = aug_energy_start_of_year, name= "Net Energy @ POM 1", mode = "markers", marker=dict(symbol = "circle", color='purple', size = 10), showlegend=False))
 
     fig.add_trace(go.Line(x = x_param, y = len(x_param)*[energy_req],  name= "Net Energy Required @ POM", marker=dict(color ="red")))
 
@@ -488,7 +500,7 @@ app.layout = html.Div([
                   ],style = {"textAlign":"center"} ,className='two columns'),
         
         html.Div([html.H5('Project Size (MW)', style = input_label_style),
-                  dcc.Input(id='inp_projsize', type='number', value=100),
+                  dcc.Input(id='inp_projsize', type='number', value=100, min=20),
                   ], style = {"textAlign":"center"}, className='two columns'),
         
         html.Div([html.H5(children = 'Duration (hrs):', style = input_label_style),
@@ -550,14 +562,14 @@ html.Br(),
                 ], style = {"textAlign":"center"}, className='two columns'),
 
         html.Div([html.H5('BOL Oversize (until End of Year)', style = input_label_style),
-                dcc.Input(id='inp_overize', type='number', value=3),], style = {"textAlign":"center"}, className='two columns'),
+                dcc.Input(id='inp_overize', type='number', value=3, min=0),], style = {"textAlign":"center"}, className='two columns'),
 
         html.Div([html.H5("Project Life (years)", style = input_label_style),
-                  dcc.Input(id='inp_projlife', type='number', value=20),
+                  dcc.Input(id='inp_projlife', type='number', value=20, min=3),
                   ], style = {"textAlign":"center"},className='two columns'),
 
         html.Div([html.H5("Number of Augmentations", style = input_label_style),
-                  dcc.Input(id='inp_aug', type='number', value=4),]
+                  dcc.Input(id='inp_aug', type='number', value=4, min=0),]
                  ,style = {"textAlign":"center"} ,className='two columns'),
 
 
@@ -914,7 +926,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
             page_num = canvas.getPageNumber()
 
             canvas.setFillColorRGB(0, 0, 0)
-            canvas.drawString(25, 25+6, "%d" % page_num)
+            canvas.drawString(25, 25+6, " %d" % page_num)
 
             canvas.restoreState()
 
@@ -963,10 +975,13 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
 
         aug_energy_table = pd.DataFrame.from_dict(aug_energy_table)
 
-        aug_energy_data = []
-        aug_energy_data.append(aug_energy_table.columns.tolist())
-        for i in aug_energy_table.values.tolist():
-            aug_energy_data.append(i)
+        if len(aug_energy_table) == 0:
+            aug_energy_data = []
+        else:
+            aug_energy_data = []
+            aug_energy_data.append(aug_energy_table.columns.tolist())
+            for i in aug_energy_table.values.tolist():
+                aug_energy_data.append(i)
 
 
         power_energy_rte_table = pd.DataFrame.from_dict(power_energy_rte_table)
@@ -1085,24 +1100,29 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         content.append(Paragraph("3. System Augmentation Plan", section_paragraph_style))
 
         content.append(Paragraph("<br/><br/>", style_normal))
-
-        content.append(Paragraph("To maintain the discharge energy delivered at the POM throughout the " \
-                                + str('{:,.0f}'.format(project_life)) + "-year non-degrading energy period, \n" \
-                                "Prevalon recommends augmenting the BESS by periodically installing additional battery storage in parallel with the original system. \
-                                This results in a more attractive CAPEX. <br/><br/>" \
-                                "Planned augmentation also allows Buyer to take advantage of expected future battery performance improvements and price reductions. \
-                                It also provides the additional flexibility of being able to size the system based on actual usage in case it differs from the original \
-                                plan.", style_normal))
-
         
-        content.append(Paragraph("<br/><br/>", style_normal))
-        content.append(PageBreak())
+        if len(aug_energy_data) == 0:
+            content.append(Paragraph("Section NOT USED - Designed BESS has no Augmentations", style_normal))
 
+            content.append(PageBreak())
 
-        table = Table(aug_energy_data)
-        table_style = table_styles(aug_energy_data)
-        table.setStyle(TableStyle(table_style))
-        content.append(table)
+        else:
+            content.append(Paragraph("To maintain the discharge energy delivered at the POM throughout the " \
+                                    + str('{:,.0f}'.format(project_life)) + "-year non-degrading energy period, \n" \
+                                    "Prevalon recommends augmenting the BESS by periodically installing additional battery storage in parallel with the original system. \
+                                    This results in a more attractive CAPEX. <br/><br/>" \
+                                    "Planned augmentation also allows Buyer to take advantage of expected future battery performance improvements and price reductions. \
+                                    It also provides the additional flexibility of being able to size the system based on actual usage in case it differs from the original \
+                                    plan.", style_normal))
+
+            
+            content.append(Paragraph("<br/><br/>", style_normal))
+            content.append(PageBreak())
+
+            table = Table(aug_energy_data)
+            table_style = table_styles(aug_energy_data)
+            table.setStyle(TableStyle(table_style))
+            content.append(table)
 
         content.append(Paragraph("<br/><br/>", style_normal))
 
