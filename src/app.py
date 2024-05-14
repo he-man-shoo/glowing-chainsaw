@@ -604,7 +604,7 @@ html.Br(),
 
     html.Div([
         html.Div([html.H5("")], className='one columns'),
-        dcc.Graph(id = "plot", style = {"height":"80vh"},  className='ten columns'),
+        dcc.Loading(dcc.Graph(id = "plot", style = {"height":"80vh"},  className='ten columns')),
 
     ], className='row'),
 
@@ -622,8 +622,6 @@ html.Br(),
         dbc.Container([html.P(id = "aug_energy_table"),
                     ], className='three columns'),
                 ], className='row'),
-
-  
 
 html.Br(),
 
@@ -659,7 +657,10 @@ html.Br(),
 html.Div([
     html.Div([html.H5("")], className='three columns'),
     html.Button('Generate Technical Proposal', id='generate-pdf-button', style=button_style, className='three columns'),
-    html.A('Download Technical Proposal', id='download-pdf', href='', className='three columns', style= {"textAlign":"center", 'border-radius': '4px', 'border': '1px solid navy','background-color': 'rgb(127, 81, 185)', 'color': 'white', 'height': '38px', 'padding': '8px'})
+    dcc.Loading(children = html.A('Download Technical Proposal', id='download-pdf', href='', \
+                                  className='three columns', style= {"textAlign":"center", 'border-radius': '4px', \
+                                                                     'border': '1px solid navy','background-color': 'rgb(127, 81, 185)',\
+                                                                          'color': 'white', 'height': '38px', 'padding': '8px'}), type="circle")
         ]),
 
 html.Br(),
