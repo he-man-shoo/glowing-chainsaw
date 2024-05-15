@@ -463,8 +463,10 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     plot_title = str(proj_location) + " | " + str(proj_name) + " | " + str(energy_req) + " MWh Energy Capacity @ "+ str(point_of_measurement) + " | " + str(number_cycles) + " cycles/year"
     y_axis_range = [str(power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001 - power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001/10), str(batt_nameplate*optimized_number_of_stacks*0.001)]
 
+    block_type = int(optimized_number_of_containers/optimized_number_of_pcs)
+
     return fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, \
-        bol_design_summary, plot_title, y_axis_range, months_to_COD
+        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type
 
 
 
@@ -650,6 +652,7 @@ html.Div([
     dash.dcc.Store(id = "stored_plot_title"),
     dash.dcc.Store(id = "stored_y_axis_range"),
     dash.dcc.Store(id = "stored_months_to_COD"),
+    dash.dcc.Store(id = "stored_block_type"),
 ]),
 
 html.Br(),
@@ -689,6 +692,7 @@ html.Br(),
     Output('stored_plot_title', 'data'),
     Output('stored_y_axis_range', 'data'),
     Output('stored_months_to_COD', 'data'),
+    Output('stored_block_type', 'data'),
     Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
@@ -708,7 +712,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
     
     if n_clicks:
     
-        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range, months_to_COD = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
+        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
     
         def table_format(table):
             return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -775,7 +779,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles, 
 
         n_clicks = 0
         return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
-    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, months_to_COD, n_clicks
+    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, months_to_COD, block_type, n_clicks
 
     else:
         raise PreventUpdate
@@ -800,14 +804,15 @@ Output('generate-pdf-button', 'n_clicks'),
   Input('stored_plot_title', 'data'),
   Input('stored_y_axis_range', 'data'),
   Input('stored_months_to_COD', 'data'),
+  Input('stored_block_type', 'data'),
  ]
 )
 
 def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD):
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type):
     
     def create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD):
+                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type):
 
         # Define Colors 
         prevalon_lavendar = colors.Color(220/256,207/256,235/256)
@@ -1144,6 +1149,14 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         table_style = table_styles(power_energy_rte_data)
         table.setStyle(TableStyle(table_style))
         content.append(table)
+
+        content.append(PageBreak())
+
+        content.append(Paragraph("6. BESS AC Block Arrangement", section_paragraph_style))
+        content.append(Paragraph("<br/><br/>", style_normal))
+
+        # Add image to PDF
+        content.append(PlatypusImage(str(block_type) + '.png', width=456, height=600))
         
         doc.build(content, header, header)
         # Return the URL for the download link
@@ -1152,7 +1165,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
     if n_clicks:
         # Generate PDF
         pdf_file = '/download/{}'.format(create_pdf_with_header_footer(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                  bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD))
+                                  bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type))
         n_clicks = 0
     else:
         # If button is not clicked, do nothing
