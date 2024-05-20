@@ -327,7 +327,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
             i = i + 1
         
-        aug_energy_table["Augmentation Nameplate Energy (kWh)"] = aug_energy_table["Augmentation Nameplate Energy (kWh)"].apply(lambda x:'{:,.2f}'.format(x))
+        aug_energy_table["Augmentation Nameplate Energy (kWh)"] = aug_energy_table["Augmentation Nameplate Energy (kWh)"].apply(lambda x:'{:,.0f}'.format(x))
 
     power_energy_rte_table = pd.DataFrame({})
 
@@ -379,7 +379,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     design_summary = pd.DataFrame({})
 
-    design_summary["Parmeter"] = "Power Required at Point of Measurement (POM) in kW AC", \
+    design_summary["Parameter"] = "Power Required at Point of Measurement (POM) in kW AC", \
                                     "Energy Required at POM in kWh AC", \
                                     "Point of Measurement (POM)", \
                                     "Performance Period (Years)", \
@@ -414,12 +414,11 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     bol_design_summary["Parmeter"] = "Total Number of Battery Enclosures", \
                                     "Number of PCS/Transformers", \
-                                    "PCS/Transformer Model", \
-                                    "BESS Peak Aux Power (kW) \n(included in Total BESS AC Power Required at POM)", \
-                                    "Aux Energy during discharge (kWh) \n(included in Total BESS BOL AC Usable Energy Required at POM)", \
+                                    "BESS Peak Aux Power (kW)\n(included in Total BESS AC Power Required at POM)", \
+                                    "Aux Energy during discharge (kWh) @ " +str(max_site_temp) + " deg C\n(included in Total BESS BOL AC Usable Energy Required at POM)", \
                                     "BESS BOL AC Usable Energy net of Aux Energy at POM (kWh AC)"
     
-    bol_design_summary["Value"] = '{:,.0f}'.format(optimized_number_of_containers), '{:,.0f}'.format(optimized_number_of_pcs), PCS_model, '{:,.2f}'.format(aux_power*1000), \
+    bol_design_summary["Value"] = '{:,.0f}'.format(optimized_number_of_containers), '{:,.0f}'.format(optimized_number_of_pcs), '{:,.2f}'.format(aux_power*1000), \
                                 '{:,.2f}'.format(aux_energy_per_stack*optimized_number_of_stacks) , '{:,.2f}'.format((float(power_energy_rte_table["Usable AC Energy at POM (MWh)"][0].replace(',', ''))*1000))
 
                                         
@@ -553,7 +552,7 @@ html.Br(),
 
         html.Div([html.H5('Power Factor', style = input_label_style),
                     dcc.Dropdown(id='ddn_pf', options=[
-                                {'label': '0.9', 'value': 0.90},
+                                {'label': '0.90', 'value': 0.90},
                                 {'label': '0.95', 'value': 0.95}
                                 ], value= 0.95),]
                 ,style = {"textAlign":"center"}, className='two columns'),
@@ -567,7 +566,7 @@ html.Br(),
                 dcc.Input(id='inp_overize', type='number', value=3, min=0),], style = {"textAlign":"center"}, className='two columns'),
 
         html.Div([html.H5("Project Life (years)", style = input_label_style),
-                  dcc.Input(id='inp_projlife', type='number', value=20, min=3),
+                  dcc.Input(id='inp_projlife', type='number', value=20, min=3, max=20),
                   ], style = {"textAlign":"center"},className='two columns'),
 
         html.Div([html.H5("Number of Augmentations", style = input_label_style),
@@ -659,8 +658,8 @@ html.Br(),
 
 html.Div([
     html.Div([html.H5("")], className='three columns'),
-    html.Button('Generate Technical Proposal', id='generate-pdf-button', style=button_style, className='three columns'),
-    dcc.Loading(children = html.A('Download Technical Proposal', id='download-pdf', href='', \
+    html.Button('Step 1 - Generate Technical Proposal', id='generate-pdf-button', style=button_style, className='three columns'),
+    dcc.Loading(children = html.A('Step 2 - Download Technical Proposal', id='download-pdf', href='', \
                                   className='three columns', style= {"textAlign":"center", 'border-radius': '4px', \
                                                                      'border': '1px solid navy','background-color': 'rgb(127, 81, 185)',\
                                                                           'color': 'white', 'height': '38px', 'padding': '8px'}), type="circle")
