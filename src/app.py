@@ -864,9 +864,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         def header(canvas, doc):
             
             canvas.saveState()
-            url = "https://power.widen.net/content/kutz5pgcjw/jpeg/Prevalon-Logo-RGB-C+.jpeg?w=300"  # Replace with the URL of your image
-            response = requests.get(url)
-            img = Image.open(BytesIO(response.content))
+            img = Image.open('Prevalon Logo.jpg')
             img_reader = ImageReader(img)
             
             header_left_size = 1*inch
