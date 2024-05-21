@@ -9,21 +9,15 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 from flask import send_file
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from flask import send_from_directory
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
-import requests
 from PIL import Image
 from reportlab.platypus import Image as PlatypusImage
-from io import BytesIO
-import os
 import plotly.graph_objects as go
-import plotly.io as pio
 import dash_auth
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from flask import Flask
@@ -44,7 +38,7 @@ VALID_USERNAME_PASSWORD_PAIRS = {
 }
 
 
-def calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations):
+def calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee):
     pd.set_option('display.max_colwidth', 200)
         
     energy_req = power_req*duration #MWh
@@ -335,7 +329,11 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     power_energy_rte_table["Usable AC Power at POM (MW)"] = '{:,.2f}'.format(power_req)
 
-    power_energy_rte_table["Usable AC Energy at POM (MWh)"] = power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)']*0.001
+    if flat_guarantee == 'No':
+        power_energy_rte_table["Usable AC Energy at POM (MWh)"] = power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)']*0.001
+    else:
+        power_energy_rte_table["Usable AC Energy at POM (MWh)"] = [energy_req]*len(power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'])
+    
     power_energy_rte_table["Usable AC Energy at POM (MWh)"] = power_energy_rte_table["Usable AC Energy at POM (MWh)"].apply(lambda x:'{:,.2f}'.format(x))
 
     power_energy_rte_table["AC RTE including Aux at POM (%)"] = (get_DC_RTE(battery_model, duration).loc[:, str(battery_model) + " | " + str(duration)]*one_way_eff*one_way_eff*(1-aux_energy_percentage)*(1-aux_energy_percentage)-rte_margin)*100
@@ -578,6 +576,17 @@ html.Br(),
 
     html.Br(),
 
+    html.Div([html.H5("")], className='three columns'),
+
+            html.Div([html.H5("Technical Proposal to only include Flat Guarantees", style = input_label_style),
+                  dcc.RadioItems(id='inp_flt_gua', options = ['Yes', 'No'], value = 'No', inline=True)]
+                 ,style = {"textAlign":"center"} ,className='five columns'),
+
+    
+    html.Br(),
+
+    html.Br(),
+
     html.Br(),
 
     html.Div([
@@ -585,8 +594,6 @@ html.Br(),
         html.Div([html.H5("")], className='five columns'),
         
         html.Button('Run Sizing', id='generate_sizing', className='two columns', style = button_style), 
-
-
 
     ]),
     
@@ -705,13 +712,14 @@ html.Br(),
      Input('inp_overize', 'value'),
      Input('inp_projlife', 'value'),
      Input('inp_aug', 'value'),
+     Input('inp_flt_gua', 'value'),
      Input('generate_sizing', 'n_clicks'),]
 )
-def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, n_clicks):
+def update_output(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee, n_clicks):
     
     if n_clicks:
     
-        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations)
+        fig, bol_config, aug_energy_table, power_energy_rte_table, financial_table, bill_of_materials, design_summary, losses_table, bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
     
         def table_format(table):
             return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -804,6 +812,7 @@ Output('generate-pdf-button', 'n_clicks'),
   Input('stored_y_axis_range', 'data'),
   Input('stored_months_to_COD', 'data'),
   Input('stored_block_type', 'data'),
+
  ]
 )
 
