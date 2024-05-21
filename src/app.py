@@ -578,7 +578,7 @@ html.Br(),
 
     html.Div([html.H5("")], className='three columns'),
 
-            html.Div([html.H5("Technical Proposal to only include Flat Guarantees", style = input_label_style),
+            html.Div([html.H5("Technical Proposal to include Flat Energy Guarantees", style = input_label_style),
                   dcc.RadioItems(id='inp_flt_gua', options = ['Yes', 'No'], value = 'No', inline=True)]
                  ,style = {"textAlign":"center"} ,className='five columns'),
 
