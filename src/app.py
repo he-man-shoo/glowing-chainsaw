@@ -499,7 +499,7 @@ app.layout = html.Div([
                   ],style = {"textAlign":"center"} ,className='two columns'),
         
         html.Div([html.H5('Project Size (MW)', style = input_label_style),
-                  dcc.Input(id='inp_projsize', type='number', value=100, min=20),
+                  dcc.Input(id='inp_projsize', type='number', value=100, min=5),
                   ], style = {"textAlign":"center"}, className='two columns'),
         
         html.Div([html.H5(children = 'Duration (hrs):', style = input_label_style),
