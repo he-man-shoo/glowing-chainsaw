@@ -457,7 +457,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
                     ),
         font=dict(family="arial", size=18))
     
-    plot_title = str(proj_location) + " | " + str(proj_name) + " | " + str(energy_req) + " MWh Energy Capacity @ "+ str(point_of_measurement) + " | " + str(number_cycles) + " cycles/year"
+    plot_title = str(proj_location) + " | " + str(proj_name) + " | " + '{:,.2f}'.format(energy_req) + " MWh Energy Capacity @ "+ str(point_of_measurement) + " | " + str(number_cycles) + " cycles/year"
     y_axis_range = [str(power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001 - power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][project_life]*0.001/10), str(batt_nameplate*optimized_number_of_stacks*0.001)]
 
     block_type = int(optimized_number_of_containers/optimized_number_of_pcs)
