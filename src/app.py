@@ -2040,7 +2040,7 @@ def update_cost_memo(n_clicks, proj_location, proj_name, power_req, duration, bo
             c.line(x, y, 100, y)
 
 
-        pdf_path = "GA example.pdf"
+        pdf_path = "General Arrangement Drawing " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
         c = canvas.Canvas(pdf_path, pagesize=landscape(A1))
 
 
