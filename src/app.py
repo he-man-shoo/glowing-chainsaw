@@ -1229,13 +1229,14 @@ Output('generate_cost_memo', 'n_clicks'),
   Input('inp_projloct', 'value'),
   Input('inp_projnm', 'value'),
   Input('inp_projsize', 'value'),
-  Input('ddn_duration', 'value')
+  Input('ddn_duration', 'value'),
+  Input('stored_aug_energy_table', 'data'),
  ]
 )
 
-def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_req, duration):
+def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_req, duration, aug_energy_table):
     
-    def create_cost_memo(cost_memo_table, proj_location, proj_name, power_req, duration):
+    def create_cost_memo(cost_memo_table, proj_location, proj_name, power_req, duration, aug_energy_table):
 
         # Define Colors 
         prevalon_lavendar = colors.Color(220/256,207/256,235/256)
@@ -1337,8 +1338,17 @@ def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_
         for i in cost_memo_table.values.tolist():
             cost_memo_table_data.append(i)
 
-        # print(cost_memo_table_data)
         
+        aug_energy_table = pd.DataFrame.from_dict(aug_energy_table)
+
+        if len(aug_energy_table) == 0:
+            aug_energy_data = []
+        else:
+            aug_energy_data = []
+            aug_energy_data.append(aug_energy_table.columns.tolist())
+            for i in aug_energy_table.values.tolist():
+                aug_energy_data.append(i)
+
         # Add content to Technical Proposal
         # Add title
         title_text = str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW/"+ str('{:,.2f}'.format(power_req*duration)) +"MWh Battery Energy Storage System"
@@ -1389,14 +1399,31 @@ def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_
         table_style = table_styles(cost_memo_table_data)
         table.setStyle(TableStyle(table_style))
         content.append(table)
+
+        content.append(Paragraph("<br/><br/>", style_normal))
+
+
+        content.append(Paragraph("System Augmentation Plan", section_paragraph_style))
+
+        content.append(Paragraph("<br/><br/>", style_normal))
         
+        if len(aug_energy_data) == 0:
+            content.append(Paragraph("Section NOT USED - Designed BESS has no Augmentations", style_normal))
+
+        else:
+            table = Table(aug_energy_data)
+            table_style = table_styles(aug_energy_data)
+            table.setStyle(TableStyle(table_style))
+            content.append(table)
+    
         doc.build(content, header, header)
         # Return the URL for the download link
         return cost_memo_pdf
 
     if n_clicks:
         # Generate PDF
-        cost_memo_pdf = '/download/{}'.format(create_cost_memo(cost_memo_table, proj_location, proj_name, power_req, duration))
+        cost_memo_pdf = '/download/{}'.format(create_cost_memo(cost_memo_table, proj_location, proj_name, power_req, \
+                                                               duration, aug_energy_table))
         n_clicks = 0
 
     else:
