@@ -14,7 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, mm
 from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
-from PIL import Image
+import PIL.Image
 from reportlab.platypus import Image as PlatypusImage
 import plotly.graph_objects as go
 import dash_auth
@@ -414,17 +414,15 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     cost_memo_table = pd.DataFrame({})
     cost_memo_table["Parameter"] = "Project Location", "Project Name", "Required Power (MW)", \
-                                      "Required Energy (MWh)", "Nameplate Energy (MWh)", "AC Usable Energy at POM (MWh)",\
-                                        "Aux Losses Included?", "Degradation to COD", "Qty Strings", "Qty Containers (12 Strings)", \
-                                        "Qty Containers (10 Strings)", "Qty Containers (8 Strings)", "Total Qty Containers", "Qty PCS", "PCS Model"
+                                      "Required Energy (MWh)", "Nameplate Energy (kWh)", "AC Usable Energy at POM (kWh)",\
+                                        "Qty Strings", "Qty Containers (12 Strings)", "Qty Containers (10 Strings)", \
+                                            "Qty Containers (8 Strings)", "Total Qty Containers", "Qty PCS", "PCS Model"
 
     cost_memo_table["Value"] = proj_location, proj_name, '{:,.2f}'.format(power_req), '{:,.2f}'.format(energy_req), \
                                '{:,.2f}'.format(batt_nameplate*optimized_number_of_stacks), '{:,.2f}'.format((float(power_energy_rte_table["Usable AC Energy at POM (MWh)"][0].replace(',', ''))*1000)), \
-                               "Yes", months_to_COD, optimized_number_of_stacks, container_config_12_strings[i]*optimized_number_of_pcs, container_config_10_strings[i]*optimized_number_of_pcs, \
+                                optimized_number_of_stacks, container_config_12_strings[i]*optimized_number_of_pcs, container_config_10_strings[i]*optimized_number_of_pcs, \
                                 container_config_8_strings[i]*optimized_number_of_pcs, optimized_number_of_containers, optimized_number_of_pcs, PCS_model
     
-
-
 
     x_param = power_energy_table[:project_life+1].index.values.tolist()
     y_param = power_energy_table['Total Net Energy at '+ str(point_of_measurement)+ ' (kWh)'][:project_life+1]*0.001
@@ -468,10 +466,10 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     PCS_kVA_string = '{:,.0f}'.format(PCS_kVA_at_max_site_temp) + "kVA @ "+ '{:,.0f}'.format(max_site_temp) +" deg C"
 
-    BESS_string = '{:,.2f}'.format(max_racks_per_container*batt_nameplate) + " kWh"
+    BESS_Rating = max_racks_per_container*batt_nameplate
 
     return fig, bol_config, aug_energy_table, power_energy_rte_table, bill_of_materials, design_summary, losses_table, \
-        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table, PCS_kVA_string, BESS_string
+        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table, PCS_kVA_string, BESS_Rating
 
 
 
@@ -670,7 +668,7 @@ html.Div([
     dash.dcc.Store(id = "stored_block_type"),
     dash.dcc.Store(id = "stored_cost_memo_table"),
     dash.dcc.Store(id = "stored_PCS_kVA_string"),
-    dash.dcc.Store(id = "stored_BESS_string"),
+    dash.dcc.Store(id = "stored_BESS_Rating"),
 ]),
 
 html.Br(),
@@ -738,7 +736,7 @@ html.Br(),
     Output('stored_block_type', 'data'),
     Output('stored_cost_memo_table', 'data'),
     Output('stored_PCS_kVA_string', 'data'),
-    Output('stored_BESS_string', 'data'),
+    Output('stored_BESS_Rating', 'data'),
     Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
@@ -765,7 +763,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         fig, bol_config, aug_energy_table, power_energy_rte_table, \
             bill_of_materials, design_summary, losses_table, bol_design_summary, \
                 plot_title, y_axis_range, months_to_COD, block_type, \
-                    cost_memo_table, PCS_kVA_string, BESS_string = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
+                    cost_memo_table, PCS_kVA_string, BESS_Rating = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
     
         def table_format(table):
             return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -831,7 +829,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
 
         n_clicks = 0
         return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
-    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_string, n_clicks
+    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, n_clicks
 
     else:
         raise PreventUpdate
@@ -917,7 +915,7 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         def header(canvas, doc):
             
             canvas.saveState()
-            img = Image.open('Prevalon Logo.jpg')
+            img = PIL.Image.open('Prevalon Logo.jpg')
             img_reader = ImageReader(img)
             
             header_left_size = 1*inch
@@ -1253,7 +1251,7 @@ def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_
         def header(canvas, doc):
             
             canvas.saveState()
-            img = Image.open('Prevalon Logo.jpg')
+            img = PIL.Image.open('Prevalon Logo.jpg')
             img_reader = ImageReader(img)
             
             header_left_size = 1*inch
@@ -1416,19 +1414,28 @@ Output('generate_GA', 'n_clicks'),
   Input('ddn_duration', 'value'),
   Input('stored_bol_design_summary', 'data'),
   Input('stored_PCS_kVA_string', 'data'),
-  Input('stored_BESS_string', 'data'), 
+  Input('stored_BESS_Rating', 'data'),
+  Input('stored_aug_energy_table', 'data'), 
  ]
 )
 
-def update_cost_memo(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_string):
+def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug):
     
-    def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_string):
+    def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug):
         
-        block_qty = int(bol['Value']['1'])
-        block_type = int(bol['Value']['0'])/int(bol['Value']['1'])
+        block_qty = int(bol['Value']['1'].replace(',', ''))
+        block_type = int(bol['Value']['0'].replace(',', ''))/int(bol['Value']['1'].replace(',', ''))
 
         feeder_qty = math.ceil(block_qty/8)
         aux_xfrm_rating = int(math.ceil(float(bol['Value']['2'].replace(',', ''))*1.25/feeder_qty/100))*100
+
+        total_BOL_energy = block_qty*block_type*BESS_Rating
+
+        total_augmentation_energy = 0
+        
+        if aug:
+            for i in aug['Augmentation Nameplate Energy (kWh)'].values():
+                total_augmentation_energy = total_augmentation_energy + float(i.replace(',', ''))
 
 
         container_length = 20*12
@@ -1792,16 +1799,26 @@ def update_cost_memo(n_clicks, proj_location, proj_name, power_req, duration, bo
             c.drawString(x_notes, y_notes - 10, "     LAYOUT SHALL BE DESIGNED BY A LICENSED ENGINEER TO ALL APPLICABLE")
             c.drawString(x_notes, y_notes - 20, "     CODES BASED ON ACTUAL SITE CONDITIONS.")
 
-            c.drawString(x_notes, y_notes - 40, " 2. ALL DIMENSIONS ON THIS DRAWING ARE NOMINAL. CONTRACTOR SHALL VERIFY")
-            c.drawString(x_notes, y_notes - 50, "     ALL DIMENSIONS AND CONDITIONS AT THE JOB SITE PRIOR TO COMMENCING WORK.")
-            c.drawString(x_notes, y_notes - 60, "     DIMENSIONS NOT SHOWN ARE TO BE DETERMINED IN FIELD.")
+            c.drawString(x_notes, y_notes - 40, " 2. THIS DOCUMENT ONLY SHOWS EQUIPMENT IN PREVALON'S SCOPE AT BOL. BUYER")
+            c.drawString(x_notes, y_notes - 50, "     TO ALLOCATE ADDITIONAL SPACE AS REQUIRED FOR EQUIPMENT INCLUDING BUT")
+            c.drawString(x_notes, y_notes - 60, "     NOT LIMITED TO AUX TRANSFORMERS AND PANELS, AUGMENTATION EQUIPMENT")
+            c.drawString(x_notes, y_notes - 70, "     REQUIRED OVER THE LIFE OF PROJECT, MV SWITCHGEAR, SUBSTATION YARD ETC.")
+            
+            c.drawString(x_notes, y_notes - 90, " 3. ALL DIMENSIONS ON THIS DRAWING ARE NOMINAL. CONTRACTOR SHALL VERIFY")
+            c.drawString(x_notes, y_notes - 100, "     ALL DIMENSIONS AND CONDITIONS AT THE JOB SITE PRIOR TO COMMENCING WORK.")
+            c.drawString(x_notes, y_notes - 110, "     DIMENSIONS NOT SHOWN ARE TO BE DETERMINED IN FIELD.")
 
-            c.drawString(x_notes, y_notes - 80, " 3. EQUIPMENT RATING SHOWN ARE NAMEPLATE VALUES.")
+            c.drawString(x_notes, y_notes - 130, " 4. EQUIPMENT RATING SHOWN ARE NAMEPLATE VALUES.")
 
-            c.drawString(x_notes, y_notes - 100, " 4. APPROXIMATE AREA OF WORK FOR SITE: " + '{:,.2f}'.format(area) + " SQ FT ("+ '{:,.2f}'.format(area/43560) + " ACRES)")
-            c.drawString(x_notes, y_notes - 110, "      Or " + '{:,.2f}'.format(area/10.764) + " SQ METERS ("+ '{:,.2f}'.format(area/107600) + " HECTARES)")
+            c.drawString(x_notes, y_notes - 150, " 5. APPROXIMATE AREA OF WORK REQUIRED FOR BOL EQUIPMENT: " + '{:,.2f}'.format(area) + " SQ FT")
+            c.drawString(x_notes, y_notes - 160, "      ("+ '{:,.2f}'.format(area/43560) + " ACRES) OR " + '{:,.2f}'.format(area/10.764) + " SQ MTS ("+ '{:,.2f}'.format(area/107600) + " HECTARES)")
 
-            c.rect(x_top_corner- 360, y_notes - 130, 360, 150, fill=0)
+            augmentation_area = area/total_BOL_energy*total_augmentation_energy
+
+            c.drawString(x_notes, y_notes - 180, " 6. APPROXIMATE AREA REQUIRED FOR AUGMENTATION EQUIPMENT (NOT SHOWN IN")
+            c.drawString(x_notes, y_notes - 190, "      THIS DRAWING): " + '{:,.2f}'.format(augmentation_area) + " SQ FT ("+ '{:,.2f}'.format(augmentation_area/43560) + " ACRES) OR " + '{:,.2f}'.format(augmentation_area/10.764) + " SQ MTS ("+ '{:,.2f}'.format(augmentation_area/107600) + " HECTARES)")
+
+            c.rect(x_top_corner- 360, y_notes - 200, 360, 260, fill=0)
 
             c.setFont("Helvetica", 9)
 
@@ -1877,7 +1894,7 @@ def update_cost_memo(n_clicks, proj_location, proj_name, power_req, duration, bo
             c.rect(x_bot_corner - 360, y_bot_corner+760, 360, 40, fill=0)  # (x, y, width, height)
             c.drawCentredString(x_bot_corner - 320, y_bot_corner + 775,  str(int(block_qty*block_type)))
             c.drawCentredString(x_bot_corner - 200, y_bot_corner + 775, "20' BESS CONTAINER")
-            c.drawCentredString(x_bot_corner - 60, y_bot_corner + 775, BESS_string)
+            c.drawCentredString(x_bot_corner - 60, y_bot_corner + 775, str('{:,.2f}'.format(BESS_Rating)) + " kWh")
 
             c.rect(x_bot_corner - 360, y_bot_corner+800, 360, 40, fill=0)  # (x, y, width, height)
             c.drawCentredString(x_bot_corner - 320, y_bot_corner + 815, "QTY")
@@ -1930,7 +1947,7 @@ def update_cost_memo(n_clicks, proj_location, proj_name, power_req, duration, bo
             
             c.setFont("Helvetica", 20)
             # Outer Length
-            draw_arrow(c, x - outer_block_length, 1580, x, 1580, 10, 1)
+            draw_arrow(c, x - outer_block_length, 1580, x, 1580, 10*scaling_factor, 1)
             c.drawCentredString(x - outer_block_length + outer_block_length/2, 1580 + 10, dim(outer_block_length, scaling_factor, "", ""))
 
             x = x_start - access_road_width/8
@@ -2111,7 +2128,7 @@ def update_cost_memo(n_clicks, proj_location, proj_name, power_req, duration, bo
 
     if n_clicks:
         # Generate PDF
-        GA_PDF = '/download/{}'.format(create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_string))
+        GA_PDF = '/download/{}'.format(create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug))
         n_clicks = 0
 
     else:
