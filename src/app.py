@@ -237,7 +237,6 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
         actual_number_of_containers = actual_number_of_pcs*container_config[i]
         cost = actual_number_of_pcs*cost_pcs + actual_number_of_stacks*batt_nameplate*cost_stack + actual_number_of_containers*cost_container
 
-        #print(actual_number_of_pcs, actual_number_of_stacks, actual_number_of_containers, cost)
     
         if i == 0: minimized_cost = cost
 
@@ -247,9 +246,26 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
             optimized_number_of_stacks = actual_number_of_stacks
             optimized_number_of_containers = actual_number_of_containers
 
-            #print(optimized_number_of_pcs, optimized_number_of_stacks, optimized_number_of_containers, minimized_cost)
+    # print(optimized_number_of_pcs, optimized_number_of_stacks, optimized_number_of_containers, minimized_cost)
 
-    bol_config = pd.DataFrame({"Parameter" : ["Number of Stacks | "+str(math.ceil(batt_nameplate)) + " kWh", "Number of "+ str(battery_model) + " Containers", "Number of PCS | " + str(PCS_model)], 
+    for i in range (len(stacks_config)):
+        actual_number_of_pcs = min_number_of_Inverters_required + i - 1
+
+        for j in range (len(stacks_config)):
+            actual_number_of_stacks = actual_number_of_pcs * stacks_config[j]
+            actual_number_of_containers = actual_number_of_pcs*container_config[j]
+            cost = actual_number_of_pcs*cost_pcs + actual_number_of_stacks*batt_nameplate*cost_stack + actual_number_of_containers*cost_container
+
+            if cost <= minimized_cost and actual_number_of_stacks >= min_number_of_stacks: 
+                minimized_cost = cost
+                optimized_number_of_pcs = actual_number_of_pcs
+                optimized_number_of_stacks = actual_number_of_stacks
+                optimized_number_of_containers = actual_number_of_containers
+    
+    # print(optimized_number_of_pcs, optimized_number_of_stacks, optimized_number_of_containers, minimized_cost)
+
+
+    bol_config = pd.DataFrame({"Parameter" : ["Number of Strings | "+str(math.ceil(batt_nameplate)) + " kWh", "Number of "+ str(battery_model) + " Containers", "Number of PCS | " + str(PCS_model)], 
                                "Quantities (#)" : [optimized_number_of_stacks, optimized_number_of_containers, optimized_number_of_pcs]}) 
 
 
