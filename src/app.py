@@ -1480,7 +1480,9 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
             for i in aug['Augmentation Nameplate Energy (kWh)'].values():
                 total_augmentation_energy = total_augmentation_energy + float(i.replace(',', ''))
 
-
+        
+        n_s_block_access_road = 10 # Access Road after "n" number of blocks
+        
         container_length = 20*12
         container_width = 8*12
 
@@ -1493,7 +1495,7 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
         pcs_clearance_short_end = 5*12
         pcs_clearance_long_end = 10*12
 
-        access_road_width = 16*12
+        access_road_width = 20*12
 
         
 
@@ -1581,26 +1583,23 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
             
             if block_type == 2:
                 inner_block_length = (e_w_block_limit*2)*(container_length) + (e_w_block_limit + (e_w_block_limit//2) + (e_w_block_limit%2 - 1))*pcs_clearance_short_end + (e_w_block_limit//2)*container_clearance_minimum + access_road_width/4
+            
             if block_type == 3:
                 inner_block_length = (e_w_block_limit*2 + math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
                 
             if block_type == 4:
                 inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + (e_w_block_limit)*container_clearance_minimum + access_road_width/4
             
-
-
             outer_block_length = inner_block_length + 2*access_road_width
 
-            if n_s_block_limit % 2 != 0:
-                inner_block_width_odd = (container_width*2 + container_clearance_minimum) + access_road_width/4
-                inner_block_width_even = 2*(container_width*2 + container_clearance_minimum) + container_clearance_long_end + access_road_width/4
+            inner_block_width_partial = (n_s_block_limit % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_limit % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
+            inner_block_width_full = n_s_block_access_road*(container_width*2 + container_clearance_minimum) + (n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
 
-                outer_block_width = (n_s_block_limit//2*inner_block_width_even + n_s_block_limit % 2 *inner_block_width_odd) + \
-                    (int(n_s_block_limit/2) + int(n_s_block_limit%2) - 1)*access_road_width + 2*access_road_width
-
+            if n_s_block_limit % n_s_block_access_road != 0:
+                outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full  + access_road_width) + inner_block_width_partial + 2*access_road_width
+                                    
             else:
-                inner_block_width_even = 2*(container_width*2 + container_clearance_minimum) + container_clearance_long_end + access_road_width/4
-                outer_block_width = n_s_block_limit/2*inner_block_width_even + (n_s_block_limit/2-1)*access_road_width + 2*access_road_width
+                outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full) + 2*access_road_width
 
             scaling_factor_x = 1600/outer_block_length
             scaling_factor_y = 1200/outer_block_width
@@ -1807,10 +1806,10 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
             if block_type == 4:
                 inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + (e_w_block_limit)*container_clearance_minimum + access_road_width/4
             
-            if n_s_block_count%2 != 0 :
-                inner_block_width = (container_width*2 + container_clearance_minimum) + access_road_width/4
+            if n_s_block_count % n_s_block_access_road != 0 :
+                inner_block_width = (n_s_block_count % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_count % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
             else:
-                inner_block_width = 2*(container_width*2 + container_clearance_minimum) + container_clearance_long_end + access_road_width/4
+                inner_block_width = n_s_block_access_road*(container_width*2 + container_clearance_minimum) + (n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
 
             c.roundRect(x, y, inner_block_length, inner_block_width, access_road_width/8)  # (x, y, width, height)
 
@@ -1960,15 +1959,15 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
 
             outer_block_length = inner_block_length + 2*access_road_width
 
-            if n_s_block_limit % 2 != 0:
-                inner_block_width_even = 2*(container_width*2 + container_clearance_minimum) + container_clearance_long_end + access_road_width/4
-                inner_block_width_odd = (container_width*2 + container_clearance_minimum) + access_road_width/4
-                
-                outer_block_width = (n_s_block_limit//2*inner_block_width_even + n_s_block_limit % 2 *inner_block_width_odd) + \
-                    (int(n_s_block_limit/2) + int(n_s_block_limit%2) - 1)*access_road_width + 2*access_road_width
+            inner_block_width_partial = (n_s_block_limit % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_limit % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
+            inner_block_width_full = n_s_block_access_road*(container_width*2 + container_clearance_minimum) + (n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
 
+            if n_s_block_limit % n_s_block_access_road != 0:
+            
+                outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full  + access_road_width) + inner_block_width_partial + 2*access_road_width
+                                    
             else:
-                outer_block_width = n_s_block_limit/2*inner_block_width + (n_s_block_limit/2-1)*access_road_width + 2*access_road_width
+                outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full) + 2*access_road_width
 
             c.roundRect(x, y, outer_block_length, outer_block_width, access_road_width/8, fill = 0)  # (x, y, width, height)
             
@@ -2107,7 +2106,6 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
         x_start = 250 + scaling_factor*200
         y_start = 1380 - scaling_factor*300
 
-        max_inner_block_width = (container_width*2 + container_clearance_minimum) + access_road_width/4
         dual_row = 0
 
         x_start_block = x_start
@@ -2125,8 +2123,6 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
 
 
 
-
-
         while n_s_block_count <= n_s_block_limit:
             y_block_mid = y_start_block + pcs_width/2
 
@@ -2139,17 +2135,21 @@ def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_
             
             x = x_start_block
 
-            if n_s_block_count % 2 == 0 or n_s_block_count == n_s_block_limit:
+            if n_s_block_count % n_s_block_access_road == 0 or n_s_block_count == n_s_block_limit:
                 y_start_block = y_block_mid - container_clearance_minimum/2 - container_width - access_road_width/4 - access_road_width - \
                     container_width - container_clearance_minimum/2 - pcs_width/2
                 
                 inner_block_length, inner_block_width = add_inner_block(c, x_start_block, y_block_mid - container_width - container_clearance_minimum/2,  e_w_block_limit, n_s_block_count, block_type)
 
+                if n_s_block_count // n_s_block_access_road == 0:
+                    max_inner_block_width = inner_block_width
+                else:
+                    max_inner_block_width = n_s_block_access_road*(container_width*2 + container_clearance_minimum) + (n_s_block_access_road - 1)*container_clearance_long_end + access_road_width/4
+
             else:
                 y_start_block = y_block_mid - container_clearance_minimum/2 - container_width - container_clearance_long_end - \
                     container_width - container_clearance_minimum/2 - pcs_width/2
                 
-                max_inner_block_width = 2*(container_width*2 + container_clearance_minimum) + container_clearance_long_end + access_road_width/4
                 dual_row = 1
 
             e_w_block_count = 1
