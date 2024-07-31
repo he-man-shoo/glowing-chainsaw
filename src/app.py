@@ -2658,15 +2658,15 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
 
         c.setFont("Helvetica", 14)
 
-        c.showPage() ## ADDS A PAGE
+        # c.showPage() ## ADDS A PAGE
 
-        if RMU_req == "Yes":
-            batt_block_string = str(block_type) + "_RMU_SLD.png"
-        else:
+        # if RMU_req == "Yes":
+        #     batt_block_string = str(block_type) + "_RMU_SLD.png"
+        # else:
             
-            batt_block_string = str(block_type) + "_SLD.png"
+        #     batt_block_string = str(block_type) + "_SLD.png"
 
-        c.drawImage(batt_block_string, 30*mm, 30*mm, width=(841-30)*mm, height=(594-30)*mm)
+        # c.drawImage(batt_block_string, 30*mm, 30*mm, width=(841-30)*mm, height=(594-30)*mm)
 
 
         c.save()
