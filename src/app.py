@@ -20,6 +20,7 @@ import plotly.graph_objects as go
 import dash_auth
 from flask import Flask
 from dash.exceptions import PreventUpdate
+import PyPDF2
 
 from reportlab.pdfgen import canvas
 from reportlab.graphics.shapes import *
@@ -2604,7 +2605,7 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
 
         
         
-        pdf_path = "Single Line Diagram " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+        pdf_path = "SLD.pdf" 
         c = canvas.Canvas(pdf_path, pagesize=landscape(A1))
 
         x_start = 100
@@ -2619,9 +2620,6 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
         x = x_start_block
         y = y_start_block
 
-        e_w_block_count = 1
-        block_count = 1
-        n_s_block_count = 1
 
         border(c, block_qty, block_type)
         unique_feeder = 0
@@ -2657,19 +2655,31 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
         draw_arrow(c, x + 1300, y + 50, x + 1500, y+50, 10, 3)
 
         c.setFont("Helvetica", 14)
-
-        # c.showPage() ## ADDS A PAGE
-
-        # if RMU_req == "Yes":
-        #     batt_block_string = str(block_type) + "_RMU_SLD.png"
-        # else:
-            
-        #     batt_block_string = str(block_type) + "_SLD.png"
-
-        # c.drawImage(batt_block_string, 30*mm, 30*mm, width=(841-30)*mm, height=(594-30)*mm)
-
-
         c.save()
+
+        def combine_pdfs(pdf_list, output_path):
+            pdf_writer = PyPDF2.PdfWriter()
+
+            for pdf in pdf_list:
+                pdf_reader = PyPDF2.PdfReader(pdf)
+                for page_num in range(len(pdf_reader.pages)):
+                    page = pdf_reader.pages[page_num]
+                    pdf_writer.add_page(page)
+
+            with open(output_path, 'wb') as output_pdf:
+                pdf_writer.write(output_pdf)
+
+        if RMU_req == "Yes":
+            batt_block_string = str(block_type) + "_RMU_SLD.pdf"
+        else:
+            batt_block_string = str(block_type) + "_SLD.pdf"
+
+
+        # List of PDF files to combine
+        pdf_list = ['SLD.pdf', batt_block_string]
+        pdf_path = "Single Line Diagram " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+
+        combine_pdfs(pdf_list, pdf_path)
 
         return pdf_path
 
