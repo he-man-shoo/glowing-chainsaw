@@ -2210,11 +2210,7 @@ Output('generate_SLD', 'n_clicks'),
 def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String):
     
     def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String):
-        
-
-        pdf_path = "Single Line Diagram " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
-        c = canvas.Canvas(pdf_path, pagesize=landscape(A1))
-        
+               
         if complaince_code == "IEC":
             RMU_req = "Yes"
         else:
@@ -2606,6 +2602,11 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
                         
                         x = x + 30 + (150 - 30*block_type)/(block_type+1)
 
+        
+        
+        pdf_path = "Single Line Diagram " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+        c = canvas.Canvas(pdf_path, pagesize=landscape(A1))
+
         x_start = 100
         y_start = 1200
 
@@ -2665,7 +2666,7 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
             
             batt_block_string = str(block_type) + "_SLD.png"
 
-        c.drawImage(batt_block_string, 20*mm, 20*mm, width=(841-40)*mm, height=(594-40)*mm)
+        c.drawImage(batt_block_string, 30*mm, 30*mm, width=(841-30)*mm, height=(594-30)*mm)
 
 
         c.save()
@@ -2680,6 +2681,7 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
     else:
         # If button is not clicked, do nothing
         SLD_PDF = ''
+
     return SLD_PDF, n_clicks
 
 
