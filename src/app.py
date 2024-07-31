@@ -228,9 +228,9 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     cost_container, cost_stack, cost_pcs = get_financials_table(PCS_model)
 
     # Optimize Number Cost
-    stacks_config = [8, 10, 12, 16, 20, 24, 26, 28, 30, 32, 34, 36, 40, 44, 48]
+    stacks_config = [16, 20, 24, 32, 36, 40, 44, 48]
 
-    container_config = [1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4]
+    container_config = [2, 2, 2, 4, 4, 4, 4, 4]
 
     for i in range (len(stacks_config)):
         actual_number_of_pcs = math.ceil(min_number_of_stacks/stacks_config[i])
@@ -423,9 +423,9 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     i = stacks_config.index(int(number_of_strings_per_PCS))
 
-    container_config_8_strings =  [1, 0, 0, 2, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0]
-    container_config_10_strings = [0, 1, 0, 0, 2, 0, 1, 2, 3, 2, 1, 0, 4, 2, 0]
-    container_config_12_strings = [0, 0, 1, 0, 0, 2, 0, 0, 0, 1, 2, 3, 0, 2, 4]
+    container_config_8_strings =  [2, 0, 0, 4, 2, 2, 0, 0]
+    container_config_10_strings = [0, 2, 0, 0, 2, 0, 2, 0]
+    container_config_12_strings = [0, 0, 2, 4, 0, 2, 2, 4]
 
                                         
 
@@ -2677,7 +2677,7 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
 
         # List of PDF files to combine
         pdf_list = ['SLD.pdf', batt_block_string]
-        pdf_path = "Single Line Diagram " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+        pdf_path = "Single Line Diagram" + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
 
         combine_pdfs(pdf_list, pdf_path)
 
