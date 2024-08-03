@@ -1228,13 +1228,13 @@ def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_
         table.setStyle(TableStyle(table_style))
         content.append(table)
 
-        content.append(PageBreak())
+        # content.append(PageBreak())
 
-        content.append(Paragraph("6. BESS AC Block Arrangement", section_paragraph_style))
-        content.append(Paragraph("<br/><br/>", style_normal))
+        # content.append(Paragraph("6. BESS AC Block Arrangement", section_paragraph_style))
+        # content.append(Paragraph("<br/><br/>", style_normal))
 
-        # Add image to PDF
-        content.append(PlatypusImage(str(block_type) + '.png', width=456, height=600))
+        # # Add image to PDF
+        # content.append(PlatypusImage(str(block_type) + '.png', width=456, height=600))
         
         doc.build(content, header, header)
         # Return the URL for the download link
