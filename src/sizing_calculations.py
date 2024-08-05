@@ -419,10 +419,15 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
                                         "Qty Strings", "Qty Containers (12 Strings)", "Qty Containers (10 Strings)", \
                                             "Qty Containers (8 Strings)", "Total Qty Containers", "Qty PCS", "PCS Model"
 
+    if RMU_Required == "IEC":
+        cost_memo_PCS_string = PCS_model + " with RMU"
+    else:
+        cost_memo_PCS_string = PCS_model
+    
     cost_memo_table["Value"] = proj_location, proj_name, '{:,.2f}'.format(power_req), '{:,.2f}'.format(energy_req), \
                                '{:,.2f}'.format(batt_nameplate*optimized_number_of_stacks), '{:,.2f}'.format((float(power_energy_rte_table["Usable AC Energy at POM (MWh)"][0].replace(',', ''))*1000)), \
                                 optimized_number_of_stacks, container_config_12_strings[i]*optimized_number_of_pcs, container_config_10_strings[i]*optimized_number_of_pcs, \
-                                container_config_8_strings[i]*optimized_number_of_pcs, optimized_number_of_containers, optimized_number_of_pcs, PCS_model
+                                container_config_8_strings[i]*optimized_number_of_pcs, optimized_number_of_containers, optimized_number_of_pcs, cost_memo_PCS_string
     
 
     x_param = power_energy_table[:project_life+1].index.values.tolist()
