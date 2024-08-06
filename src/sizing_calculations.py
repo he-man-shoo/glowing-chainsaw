@@ -409,7 +409,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
 
     container_config_8_strings =  [2, 0, 0, 4, 2, 2, 0, 0]
     container_config_10_strings = [0, 2, 0, 0, 2, 0, 2, 0]
-    container_config_12_strings = [0, 0, 2, 4, 0, 2, 2, 4]
+    container_config_12_strings = [0, 0, 2, 0, 0, 2, 2, 4]
 
                                         
 

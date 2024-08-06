@@ -661,7 +661,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         c.line(x, y, 100, y)
 
 
-    pdf_path = "General Arrangement Drawing " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+    pdf_path = "GA.pdf"
     c = canvas.Canvas(pdf_path, pagesize=landscape(A1))
 
 
@@ -728,5 +728,26 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
     dimensions(c, x_start, y_start, access_road_width, block_type, inner_block_length, inner_block_width, outer_block_length, outer_block_width)
 
     c.save()
+
+    def combine_pdfs(pdf_list, output_path):
+        pdf_writer = PyPDF2.PdfWriter()
+
+        for pdf in pdf_list:
+            pdf_reader = PyPDF2.PdfReader(pdf)
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                pdf_writer.add_page(page)
+
+        with open(output_path, 'wb') as output_pdf:
+            pdf_writer.write(output_pdf)
+
+    batt_block_string = "Block Type " + str(block_type) + ".pdf"
+
+
+    # List of PDF files to combine
+    pdf_list = ['GA.pdf', batt_block_string]
+    pdf_path = "General Arrangement Diagram" + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+
+    combine_pdfs(pdf_list, pdf_path)
 
     return pdf_path
