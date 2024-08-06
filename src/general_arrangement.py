@@ -741,11 +741,11 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         with open(output_path, 'wb') as output_pdf:
             pdf_writer.write(output_pdf)
 
-    batt_block_string = "Block Type " + str(block_type) + ".pdf"
+    batt_block_string = "Block Type " + str(int(block_type)) + ".pdf"
 
 
     # List of PDF files to combine
-    pdf_list = ['GA.pdf', batt_block_string]
+    pdf_list = [batt_block_string, 'GA.pdf']
     pdf_path = "General Arrangement Diagram" + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
 
     combine_pdfs(pdf_list, pdf_path)
