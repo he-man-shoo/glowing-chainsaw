@@ -42,7 +42,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         for i in aug['Augmentation Nameplate Energy (kWh)'].values():
             total_augmentation_energy = total_augmentation_energy + float(i.replace(',', ''))
 
-    
+
     n_s_block_access_road = 10 # Access Road after "n" number of blocks
     
     container_length = 20*12
@@ -51,7 +51,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
     pcs_length = 20*12
     pcs_width = 8*12
 
-    container_clearance_minimum = 6
+    container_clearance_minimum = 12
     container_clearance_long_end = 10*12
 
     pcs_clearance_short_end = 5*12
@@ -99,7 +99,19 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
             # Draw the second arrowhead
             c.line(x2, y2, x2 - arrow_size/2, y2 - arrow_size)
             c.line(x2, y2, x2 + arrow_size/2, y2 - arrow_size)
+        
+        if orient == 3:
+            """
+            Draw an arrow on the canvas from (start_x, start_y) to (end_x, end_y).
+            arrow_size determines the size of the arrowhead.
+            """
 
+            # Draw the main line
+            c.line(x1, y1, x2, y2)
+
+            # Draw the first arrowhead
+            c.line(x1, y1, x1 + arrow_size, y1 + arrow_size/2)
+            c.line(x1, y1, x1 + arrow_size, y1 - arrow_size/2)
 
 
 
@@ -150,7 +162,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
             inner_block_length = (e_w_block_limit*2 + math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
             
         if block_type == 4:
-            inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + (e_w_block_limit)*container_clearance_minimum + access_road_width/4
+            inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2)*pcs_clearance_short_end + (e_w_block_limit-1)*container_clearance_minimum + access_road_width/4
         
         outer_block_length = inner_block_length + 2*access_road_width
 
@@ -279,6 +291,17 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
             
             if block_type == 4:
                 
+                # Container 1 and 2
+                y = y_block_mid - container_width - container_clearance_minimum/2
+                for i in range(2):
+                    c.rect(x, y, container_length, container_width, fill=0)
+                    c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + i)))
+                    i = i + 1
+                    y = y_block_mid + container_clearance_minimum/2
+
+                x = x + container_length + pcs_clearance_short_end
+
+                
                 # PCS
                 y = y_block_mid - pcs_width/2
                 c.rect(x, y, pcs_length, pcs_width, fill=0)
@@ -288,64 +311,86 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
 
                 y = y_block_mid - container_width - container_clearance_minimum/2
 
-                # Container 1 and 3
+
+                # Container 3 and 4
+                for i in range(2):
+                    c.rect(x, y, container_length, container_width, fill=0)
+                    c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 2 + i)))
+                    i = i + 1
+                    y = y_block_mid + container_clearance_minimum/2
+
+                x = x + container_length + container_clearance_minimum
+        
+            return x
+
+        else:
+            if block_type == 4:
+                # Container 1 and 2
+                y = y_block_mid - container_width - container_clearance_minimum/2
                 for i in range(2):
                     c.rect(x, y, container_length, container_width, fill=0)
                     c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + i)))
                     i = i + 1
                     y = y_block_mid + container_clearance_minimum/2
 
-                x = x + container_length + container_clearance_minimum
+                x = x + container_length + pcs_clearance_short_end
 
-                # Container 2 and 4
+                
+                # PCS
+                y = y_block_mid - pcs_width/2
+                c.rect(x, y, pcs_length, pcs_width, fill=0)
+                c.drawCentredString(x + pcs_length/2, y + pcs_width/2 - 6*scaling_factor, "PCS #" +str(int(block_count)))
+
+                x = x + pcs_length + pcs_clearance_short_end
+
+                y = y_block_mid - container_width - container_clearance_minimum/2
+
+
+                # Container 3 and 4
                 for i in range(2):
                     c.rect(x, y, container_length, container_width, fill=0)
                     c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 2 + i)))
                     i = i + 1
-                    y = y_block_mid - container_width - container_clearance_minimum/2
+                    y = y_block_mid + container_clearance_minimum/2
 
-                x = x + container_length + pcs_clearance_short_end
+                x = x + container_length + container_clearance_minimum
+            else:
 
-        
-            return x
+                # PCS
+                y = y_block_mid - pcs_width/2
 
-        else:
-            
-            # PCS
-            y = y_block_mid - pcs_width/2
+                c.rect(x, y, pcs_length, pcs_width, fill=0)
+                c.drawCentredString(x + pcs_length/2, y + pcs_width/2 - 6*scaling_factor, "PCS #" +str(int(block_count)))
 
-            c.rect(x, y, pcs_length, pcs_width, fill=0)
-            c.drawCentredString(x + pcs_length/2, y + pcs_width/2 - 6*scaling_factor, "PCS #" +str(int(block_count)))
+                x = x + pcs_length + pcs_clearance_short_end
+                y = y_block_mid - container_width - container_clearance_minimum/2
 
-            x = x + pcs_length + pcs_clearance_short_end
-            y = y_block_mid - container_width - container_clearance_minimum/2
-
-            # Container
-            c.rect(x, y, container_length, container_width, fill=0)
-            c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count)))
-
-            if block_type > 1:
                 # Container
-                y = y_block_mid + container_clearance_minimum/2
                 c.rect(x, y, container_length, container_width, fill=0)
-                c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 1)))
+                c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count)))
 
-                if block_type > 2:
+                if block_type > 1:
                     # Container
-                    y = y_block_mid - container_width - container_clearance_minimum/2
-                    x = x + container_length + container_clearance_minimum
-                    
+                    y = y_block_mid + container_clearance_minimum/2
                     c.rect(x, y, container_length, container_width, fill=0)
-                    c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 2)))
-                    
-                    if block_type > 3:
-                        # Container
-                        y = y_block_mid + container_clearance_minimum/2
+                    c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 1)))
 
-                        c.rect(x, y, container_length, container_width, fill=0)
-                        c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 3)))
+                    if block_type > 2:
+                        # Container
+                        y = y_block_mid - container_width - container_clearance_minimum/2
+                        x = x + container_length + container_clearance_minimum
                         
-                        x = x + container_length + pcs_clearance_short_end
+                        c.rect(x, y, container_length, container_width, fill=0)
+                        c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 2)))
+                        
+                        # if block_type > 3:
+                        #     # Container
+                        #     y = y_block_mid + container_clearance_minimum/2
+
+                        #     c.rect(x, y, container_length, container_width, fill=0)
+                        #     c.drawCentredString(x + container_length/2, y + container_width/2 - 6*scaling_factor, "Container #" +str(int(container_count + 3)))
+                            
+                        #     x = x + container_length + pcs_clearance_short_end
 
             y = y_block_mid
             
@@ -366,7 +411,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
             inner_block_length = (e_w_block_limit*2 + math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
             
         if block_type == 4:
-            inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + (e_w_block_limit)*container_clearance_minimum + access_road_width/4
+            inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2)*pcs_clearance_short_end + (e_w_block_limit - 1)*container_clearance_minimum + access_road_width/4
         
         if n_s_block_count % n_s_block_access_road != 0 :
             inner_block_width = (n_s_block_count % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_count % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
@@ -574,12 +619,18 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
 
         if block_type > 2:
             x = x + container_clearance_minimum + container_length
-
+        
+        if block_type == 4:
+            x = x + pcs_clearance_short_end - container_clearance_minimum
+            
         c.line(x, y, x, 1500)
 
         block_length = pcs_length + pcs_clearance_short_end + container_length
         if block_type > 2:
             block_length = block_length + container_clearance_minimum + container_length
+        
+        if block_type == 4:
+            block_length = block_length + pcs_clearance_short_end - container_clearance_minimum
 
         # Block Length
         draw_arrow(c, x_start, 1500, x, 1500, 10*scaling_factor, 1)
@@ -587,15 +638,22 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         c.drawCentredString((x_start + x)/2, 1500 + 10*scaling_factor, "(BLOCK LENGTH TYP.)")
         
         # Block Clearance
+        if block_type == 4:
 
-        if block_type > 2:
-
+            x = x + container_clearance_minimum
+            c.line(x, y, x, 1500)
+            
+            draw_arrow(c, x, 1500, x + 20*scaling_factor, 1500, 10*scaling_factor, 3)
+            c.drawString(x - container_clearance_minimum, 1500 + 20*scaling_factor, dim(container_clearance_minimum, scaling_factor, "", ""))
+        
+        else:
             x = x + pcs_clearance_short_end
             c.line(x, y, x, 1500)
             
             draw_arrow(c, x - pcs_clearance_short_end, 1500, x, 1500, 10*scaling_factor, 1)
             c.drawString(x - pcs_clearance_short_end, 1500 + 20*scaling_factor, dim(pcs_clearance_short_end, scaling_factor, "", ""))
-            
+        
+         
         x = x_start - access_road_width/8 + inner_block_length
         c.line(x, y, x, 1540)
         
@@ -622,10 +680,18 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         c.line(x, y, 170, y)
 
         y = y - access_road_width/8
-        c.line(x + container_length + pcs_clearance_short_end, y, 190, y)
+
+        if block_type == 4:
+            c.line(x + container_length, y, 190, y)
+        else:
+            c.line(x + container_length + pcs_clearance_short_end, y, 190, y)
 
         y = y - 2*container_width - container_clearance_minimum
-        c.line(x + container_length + pcs_clearance_short_end, y, 190, y)
+        
+        if block_type == 4:
+            c.line(x + container_length, y, 190, y)
+        else:
+            c.line(x + container_length + pcs_clearance_short_end, y, 190, y)
 
         # Block Width
         draw_arrow(c, 190, y, 190, y + 2*container_width + container_clearance_minimum, 10*scaling_factor, 2)
@@ -634,11 +700,15 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
 
         if dual_row == 1:
             y = y - container_clearance_long_end
-            c.line(x + container_length + pcs_clearance_short_end, y, 220, y)
+
+            if block_type == 4:
+                c.line(x + container_length, y, 210, y)
+            else:
+                c.line(x + container_length + pcs_clearance_short_end, y, 210, y)
 
             # Block Clearance
-            draw_arrow(c, 220, y, 220, y + container_clearance_long_end, 10*scaling_factor, 2)
-            draw_vertical_text(c, 220 - 10*scaling_factor, (y + y + container_clearance_long_end)/2, dim(container_clearance_long_end, \
+            draw_arrow(c, 210, y, 210, y + container_clearance_long_end, 10*scaling_factor, 2)
+            draw_vertical_text(c, 210 - 10*scaling_factor, (y + y + container_clearance_long_end)/2, dim(container_clearance_long_end, \
                                                                                                     scaling_factor, "", ""))
             
         y = y_upper_block - max_inner_block_width
@@ -659,6 +729,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
 
         y = y_outer
         c.line(x, y, 100, y)
+
 
 
     pdf_path = "GA.pdf"
