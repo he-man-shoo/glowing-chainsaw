@@ -173,7 +173,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
             outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full  + access_road_width) + inner_block_width_partial + 2*access_road_width
                                 
         else:
-            outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full) + 2*access_road_width
+            outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full) + (n_s_block_limit//n_s_block_access_road + 1)*access_road_width
 
         scaling_factor_x = 1600/outer_block_length
         scaling_factor_y = 1200/outer_block_width
@@ -557,6 +557,26 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         c.setFont("Helvetica", 14)
         c.rect(x_bot_corner - 360, y_bot_corner+840, 360, 40, fill=0)  # (x, y, width, height)
         c.drawCentredString(x_bot_corner - 180, y_bot_corner + 855, "EQUIPMENT SCHEDULE")
+        
+        c.setFont("Helvetica", 10)
+        c.rect(x_bot_corner - 360, y_bot_corner + 980, 360, 60, fill=0)  # (x, y, width, height)
+        
+        # Draw Pattern
+        c.setDash(2, 8)  # Length of dots and space between them
+        i = 0
+        while 15*i*scaling_factor < 40:
+            c.line(x_bot_corner - 330, y_bot_corner + 990 + 15*i*scaling_factor, x_bot_corner - 210, y_bot_corner + 990 + 15*i*scaling_factor)
+            i = i + 1
+
+        c.setDash(1, 0) 
+
+        c.rect(x_bot_corner - 360, y_bot_corner + 980, 180, 60, fill=0)  # (x, y, width, height)
+        c.drawCentredString(x_bot_corner - 90, y_bot_corner + 1005, "ACCESS ROAD")
+
+
+        c.setFont("Helvetica", 14)
+        c.rect(x_bot_corner - 360, y_bot_corner + 1040, 360, 40, fill=0)  # (x, y, width, height)
+        c.drawCentredString(x_bot_corner - 180, y_bot_corner + 1055, "LEGEND")
 
         # Save the PDF
 
@@ -569,17 +589,30 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         inner_block_width_partial = (n_s_block_limit % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_limit % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
         inner_block_width_full = n_s_block_access_road*(container_width*2 + container_clearance_minimum) + (n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
 
+        print(n_s_block_limit//n_s_block_access_road)
+
         if n_s_block_limit % n_s_block_access_road != 0:
         
             outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full  + access_road_width) + inner_block_width_partial + 2*access_road_width
                                 
         else:
-            outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full) + 2*access_road_width
+            outer_block_width = n_s_block_limit//n_s_block_access_road*(inner_block_width_full) + (n_s_block_limit//n_s_block_access_road + 1)*access_road_width
 
         c.roundRect(x, y, outer_block_length, outer_block_width, access_road_width/8, fill = 0)  # (x, y, width, height)
         
-        # c.rect(x, y, access_road_width, container_length, fill=0)    
+        # Draw Pattern
+        i = 1
+        k = 15
+        while i*k*scaling_factor < outer_block_width:
+            c.setDash(2, 8)  # Length of dots and space between them
 
+            if i*k*scaling_factor > access_road_width and i*k*scaling_factor < outer_block_width - access_road_width:
+                c.line(x + k*scaling_factor, y + i*k*scaling_factor, x + access_road_width, y + i*k*scaling_factor)
+                c.line(x + inner_block_length + access_road_width + k*scaling_factor, y + i*k*scaling_factor, x + outer_block_length, y + i*k*scaling_factor) 
+            else:
+                c.line(x + k*scaling_factor, y + i*k*scaling_factor, x + outer_block_length, y + i*k*scaling_factor)
+            i = i + 1
+        c.setDash(1, 0) 
         return outer_block_length, outer_block_width
 
     def dimensions(c, x_start, y_start, access_road_width, block_type, inner_block_length, inner_block_width, outer_block_length, outer_block_width):
@@ -638,7 +671,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         c.drawCentredString((x_start + x)/2, 1500 + 10*scaling_factor, "(BLOCK LENGTH TYP.)")
         
         # Block Clearance
-        if block_type == 4:
+        if block_type % 2 == 0:
 
             x = x + container_clearance_minimum
             c.line(x, y, x, 1500)
@@ -754,6 +787,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
 
     n_s_block_count = 1
 
+   
 
 
     while n_s_block_count <= n_s_block_limit:
@@ -773,7 +807,16 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
                 container_width - container_clearance_minimum/2 - pcs_width/2
             
             inner_block_length, inner_block_width = add_inner_block(c, x_start_block, y_block_mid - container_width - container_clearance_minimum/2,  e_w_block_limit, n_s_block_count, block_type)
-
+            if n_s_block_count < n_s_block_limit:
+                # Draw Pattern
+                i = 1
+                k = 15
+                c.setDash(2, 8)  # Length of dots and space between them
+                while i*k*scaling_factor < access_road_width:
+                    y_dash = y_start_block + pcs_width/2 + container_clearance_minimum/2 + container_width + access_road_width/8
+                    c.line(x - access_road_width/8, y_dash + i*k*scaling_factor, x - access_road_width/8 + inner_block_length, y_dash + i*k*scaling_factor)
+                    i = i + 1
+                c.setDash(1, 0)  
             if n_s_block_count // n_s_block_access_road == 0:
                 max_inner_block_width = inner_block_width
             else:
@@ -790,8 +833,9 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
 
 
     y = y_block_mid - container_width - container_clearance_minimum/2
-    outer_block_length, outer_block_width = add_outer_block(c, x_start_block, y, inner_block_length, inner_block_width, n_s_block_limit, block_type)
-
+    
+    outer_block_length, outer_block_width = add_outer_block(c, x, y, inner_block_length, inner_block_width, n_s_block_limit, block_type) 
+    
     area = outer_block_length/12/scaling_factor*outer_block_width/12/scaling_factor
 
     border(c, area, block_qty, block_type)
