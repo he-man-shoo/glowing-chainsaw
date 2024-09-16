@@ -31,8 +31,13 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     energy_req = power_req*duration #MWh
     battery_model = 'HD 511' # Option to Choose Clou AC or Clou LC or HD 511 based on Batteries.xlsx
     r_SOC = 0.5 # % resting SOC
-
+    
     PCS_model = 'Sungrow SC5000UD-MV-US' # Option to Choose based on PCS.xlsx
+
+    if duration > 5:
+        PCS_model = 'Sungrow SC4000UD-MV-US' # Option to Choose based on PCS.xlsx
+        if duration > 7:
+            PCS_model = 'Sungrow SC2750UD-MV-US' # Option to Choose based on PCS.xlsx
 
     design_margin = 0.01 #1% Margin
     rte_margin = 0.01 #1% Margin
@@ -475,5 +480,5 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     BESS_Rating = max_racks_per_container*batt_nameplate
 
     return fig, bol_config, aug_energy_table, power_energy_rte_table, bill_of_materials, design_summary, losses_table, \
-        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table, PCS_kVA_string, BESS_Rating
+        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage
 

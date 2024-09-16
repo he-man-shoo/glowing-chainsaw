@@ -28,7 +28,7 @@ from datetime import date
 
 
 
-def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String):
+def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage):
             
     if complaince_code == "IEC":
         RMU_req = "Yes"
@@ -292,7 +292,7 @@ def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, b
 
                     c.setFont("Helvetica", 6)
                     c.drawString(x_mid + 17, y + 130, PCS_String[:8])
-                    c.drawString(x_mid + 17, y + 123, "34.5 kV - 690 V AC")
+                    c.drawString(x_mid + 17, y + 123, "34.5 kV - " + str(PCS_AC_Voltage) +" V AC")
                     c.drawString(x_mid + 17, y + 116, "Z% = 6%")
                     c.drawString(x_mid + 17, y + 109, "Dy11")
                     c.setFont("Helvetica-Bold", 14)
