@@ -351,7 +351,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     bill_of_materials["Description"] = "Standard-sized ISO 20’ NEMA 3R enclosure with battery modules pre-installed, featuring: \n" \
                                         " 1) Up to " + '{:,.2f}'.format(max_racks_per_container*batt_nameplate*0.001) + "MWh DC Nameplate Energy per enclosure.  \n" \
                                         " 2) Dimensions: 20’ (L) x 9.5’ (H) x 8’ (W) or 6,058mm (L) x 2,896mm (H) x 2,438mm (W)", \
-                                        "1) Integrated skid containing "+ '{:,.0f}'.format(PCS_kVA*0.001) + pcs_description + " \n" \
+                                        "1) Integrated skid containing "+ '{:,.2f}'.format(PCS_kVA*0.001) + pcs_description + " \n" \
                                         "2) AC Output Power: " + '{:,.0f}'.format(PCS_kVA_at_max_site_temp) + "kVA @ "+ '{:,.0f}'.format(max_site_temp) +" deg C  \n" \
                                         "3) " + '{:,.0f}'.format(PCS_kVA) + "kVA " +'{:,.2f}'.format(PCS_AC_Voltage*0.001) + "kV/34.5kV mineral oil (PCB free) filled MV Transformer\n" \
                                         "4) Dimensions: 20’ (L) x 9.5’ (H) x 8’ (W) or 6,058mm (L) x 2,896mm (H) x 2,438mm (W)", \
