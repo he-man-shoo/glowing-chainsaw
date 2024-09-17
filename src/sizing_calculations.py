@@ -356,7 +356,8 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
                                         "3) " + '{:,.0f}'.format(PCS_kVA) + "kVA " +'{:,.2f}'.format(PCS_AC_Voltage*0.001) + "kV/34.5kV mineral oil (PCB free) filled MV Transformer\n" \
                                         "4) Dimensions: 20’ (L) x 9.5’ (H) x 8’ (W) or 6,058mm (L) x 2,896mm (H) x 2,438mm (W)", \
                                         "Energy Management System with SCADA interface for BESS Dispatch and Control", \
-                                        "Environmentally controlled NEMA 3R enclosure housing master fire panel with battery backup"
+                                        "Environmentally controlled NEMA 3R enclosure housing master fire panel with \n" \
+                                        "battery backup"
     
     bill_of_materials["Quantity"] = optimized_number_of_containers, optimized_number_of_pcs, "Included", "Included"
 
