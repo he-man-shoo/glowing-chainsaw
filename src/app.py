@@ -225,6 +225,8 @@ html.Div([
     dash.dcc.Store(id = "stored_PCS_kVA_string"),
     dash.dcc.Store(id = "stored_BESS_Rating"),
     dash.dcc.Store(id = "stored_PCS_AC_Voltage"),
+    dash.dcc.Store(id = "stored_PCS_model"),
+
 
 ]),
 
@@ -308,6 +310,7 @@ html.Br(),
     Output('stored_PCS_kVA_string', 'data'),
     Output('stored_BESS_Rating', 'data'),
     Output('stored_PCS_AC_Voltage', 'data'),
+    Output('stored_PCS_model', 'data'),
     Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
@@ -334,7 +337,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         fig, bol_config, aug_energy_table, power_energy_rte_table, \
             bill_of_materials, design_summary, losses_table, bol_design_summary, \
                 plot_title, y_axis_range, months_to_COD, block_type, \
-                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
+                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
     
         def table_format(table):
             return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -401,7 +404,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         n_clicks = 0
         return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
     losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, \
-        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, n_clicks
+        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, n_clicks
 
     else:
         raise PreventUpdate
@@ -509,15 +512,15 @@ Output('generate_SLD', 'n_clicks'),
   Input('stored_bol_design_summary', 'data'),
   Input('stored_PCS_kVA_string', 'data'),
   Input('stored_PCS_AC_Voltage', 'data'),
-
+  Input('stored_PCS_model', 'data'),
  ]
 )
 
-def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage):
+def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage, PCS_model):
     
     if n_clicks:
         # Generate PDF
-        SLD_PDF = '/download/{}'.format(create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage))
+        SLD_PDF = '/download/{}'.format(create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage, PCS_model))
         n_clicks = 0
 
     else:

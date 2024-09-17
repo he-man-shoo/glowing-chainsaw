@@ -28,7 +28,7 @@ from datetime import date
 
 
 
-def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage):
+def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage, PCS_model):
             
     if complaince_code == "IEC":
         RMU_req = "Yes"
@@ -293,7 +293,7 @@ def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, b
                     c.setFont("Helvetica", 6)
                     c.drawString(x_mid + 17, y + 130, PCS_String[:8])
                     c.drawString(x_mid + 17, y + 123, "34.5 kV - " + str(PCS_AC_Voltage) +" V AC")
-                    c.drawString(x_mid + 17, y + 116, "Z% = 6%")
+                    c.drawString(x_mid + 17, y + 116, "Z% <= 8.5%")
                     c.drawString(x_mid + 17, y + 109, "Dy11")
                     c.setFont("Helvetica-Bold", 14)
                     
@@ -488,14 +488,14 @@ def create_SLD(proj_location, proj_name, power_req, duration, complaince_code, b
             pdf_writer.write(output_pdf)
 
     if RMU_req == "Yes":
-        batt_block_string = str(block_type) + "_RMU_SLD.pdf"
+        batt_block_string = PCS_model + "_" + str(block_type) + "_RMU_SLD.pdf"
     else:
-        batt_block_string = str(block_type) + "_SLD.pdf"
+        batt_block_string = PCS_model + "_" + str(block_type) + "_SLD.pdf"
 
 
     # List of PDF files to combine
     pdf_list = ['SLD.pdf', batt_block_string]
-    pdf_path = "Single Line Diagram" + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
+    pdf_path = "Single Line Diagram " + str(proj_name) + ", " + str(proj_location) + ", "+ str('{:,.2f}'.format(power_req)) + "MW_"+ str('{:,.2f}'.format(power_req*duration)) + "MWh.pdf"
 
     combine_pdfs(pdf_list, pdf_path)
 
