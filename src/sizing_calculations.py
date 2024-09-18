@@ -32,7 +32,10 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     battery_model = 'HD 511' # Option to Choose Clou AC or Clou LC or HD 511 based on Batteries.xlsx
     r_SOC = 0.5 # % resting SOC
     
-    PCS_model = 'Sungrow SC5000UD-MV-US' # Option to Choose based on PCS.xlsx
+    if RMU_Required == "IEC":
+        PCS_model = 'Sungrow SC4000UD-MV-US'
+    else:
+        PCS_model = 'Sungrow SC5000UD-MV-US' # Option to Choose based on PCS.xlsx
 
     if duration > 5:
         PCS_model = 'Sungrow SC4000UD-MV-US' # Option to Choose based on PCS.xlsx
