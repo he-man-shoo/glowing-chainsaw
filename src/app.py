@@ -8,6 +8,8 @@ import dash_auth
 from flask import Flask
 from dash.exceptions import PreventUpdate
 from reportlab.graphics.shapes import *
+from PIL import Image
+
 
 from sizing_calculations import calculation
 from tech_proposal import create_tech_proposal
@@ -30,7 +32,10 @@ VALID_USERNAME_PASSWORD_PAIRS = {
 
 
 # Initialize the Dash app
-app = dash.Dash(server=server, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"])
+app = dash.Dash(server=server, external_stylesheets=["https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/litera/bootstrap.min.css"],
+                meta_tags=[{'name': 'viewport',
+                            'content': 'width=device-width, initial-scale=1.0'}]
+                )
 server = app.server
 
 auth = dash_auth.BasicAuth(
@@ -40,173 +45,149 @@ auth = dash_auth.BasicAuth(
 
 input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
 
-button_style = {'border-radius': '4px', 'font-size': '1.25rem', 'border': '1px solid navy','background-color': 'dodgerblue', 'color': 'white'}
+button_style = {'width':'200px','border-radius': '4px', 'font-size': '1.25rem', 'border': '1px solid navy','background-color': 'dodgerblue', 'color': 'white'}
+
+logo = Image.open("Prevalon Logo.jpg")
 
 # Define the layout of the website
-app.layout = html.Div([
+app.layout = dbc.Container([
 
-    html.H1(children='Level 1 Sizing Tool', style={'textAlign': 'center', 'font-family':'Helvetica', 'font-size': '3.5em'}),
-                html.Br(),
+    dbc.Row([
+                dbc.Col(html.Img(src = logo, width=180),
+                    width = {'size':3}),
+                dbc.NavbarSimple(
+                    children=[
+                        dbc.NavItem(dbc.NavLink("Home", href="/")),
+                        dbc.NavItem(dbc.NavLink("Project Scheduler", href="#")),
+                        dbc.NavItem(dbc.NavLink("Financials", href="#")),
+
+                    ],
+                    color="primary",
+                    dark=True)
+                    ],justify='between'),
+
+    dbc.Row([
+        dbc.Col(html.H2("Indicative Sizing Tool", 
+                        className='text-center text-primary-emphasis'),
+                        width = {'size':6})
+    ], justify='around', align='center'),
     
+    html.Br(),
+
+    dbc.Row([
+        dbc.Col([
+                html.P("Project Location", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_projloct', value="Lake Mary", className='form-control form-control-sm'),
+
+                html.P("Number of Cycles per Year", className='col-form-label col-form-label-sm mt-2'),
+                dcc.Dropdown(id='ddn_cyc', options=[{'label':x, 'value':x}
+                                                         for x in [180, 365, 548, 730]], value = 365, style={'fontSize':'14px'}),
+
+                html.P("Max Site Temperature (deg C)", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_temp', type='number', value=40, max=50, className='form-control form-control-sm'),
+
+
+        ], width = {'size':3}),
+        dbc.Col([
+                html.P("Project Name", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_projnm', value="Pilot Project", className='form-control form-control-sm'),
+
+                html.P("Point of Measurement", className='col-form-label col-form-label-sm mt-2'),
+                dcc.Dropdown(id='ddn_pom', value = 'High Side of HV Transformer', 
+                             options=[{'label':x, 'value':x}
+                                                         for x in ['AC Terminals of Inverter', \
+                                                                   'High Side of Medium Voltage Transformer', \
+                                                                    'Medium Voltage POM', \
+                                                                        'High Side of HV Transformer',\
+                                                                            'High Voltage POM']], style={'fontSize':'14px'}),
+
+
+                html.P("Project Life (Years)", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_projlife', type='number', value=20, min=3, max=20, className='form-control form-control-sm'),
+
+
+        ], width = {'size':3}),
+    dbc.Col([
+
+                html.P("Project Size (MW)", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_projsize', type='number', value=100, min=5, className='form-control form-control-sm'),
+
+                html.P("Power Factor", className='col-form-label col-form-label-sm mt-2'),
+                dcc.Dropdown(id = 'ddn_pf', options=[{'label':x, 'value':x}
+                                                         for x in [0.90, 0.95]], value = 0.95, style={'fontSize':'14px'}),
+                
+                html.P("BOL Oversize (until End of Year)", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_overize', type='number', value=3, min=0, className='form-control form-control-sm'),
+ 
+
+        ], width = {'size':3}),
+
+    dbc.Col([
+                html.P("Project Duration (hrs)", className='col-form-label col-form-label-sm mt-2'),
+                dcc.Dropdown(id='ddn_duration', options=[{'label':x, 'value':x}
+                                                         for x in [2, 3, 4, 5, 6, 8]], value = 4, style={'fontSize':'14px'}),
+
+                html.P("Complaince Code", className='col-form-label col-form-label-sm mt-2'),
+                dcc.Dropdown(id = 'ddn_rmu', options=[{'label':x, 'value':x}
+                                                         for x in ["UL", "IEC"]], value = "UL", style={'fontSize':'14px'}),
+
+                html.P("Number of Augmentations", className='col-form-label col-form-label-sm mt-2'),
+                dbc.Input(id='inp_aug', type='number', value=4, min=0, className='form-control form-control-sm'),
+
+        ], width = {'size':3}),
+
+    ], justify='around'),
+
+    dbc.Row([
+        dbc.Col([
+                html.P("Technical Proposal to include Flat Energy Guarantees", className='col-form-label col-form-label-sm mt-2'),
+                dcc.Dropdown(id = 'inp_flt_gua', options=[{'label':x, 'value':x}
+                                                         for x in ["Yes", "No"]], value = "No", style={'fontSize':'14px'}),
+
+        ], width = {'size':4})
+    ], justify='center'),
     
-    html.Div([
-        
-        html.Div([html.H5("Project Location", style = input_label_style),
-                  dcc.Input(id='inp_projloct', type='text', value="Lake Mary"),
-                  ], style = {"textAlign":"center", 'font-size': '1em'}, className='two columns'),
-        
-        html.Div([html.H5("Project Name", style = input_label_style),
-                  dcc.Input(id='inp_projnm', type='text', value="Pilot Project"),
-                  ],style = {"textAlign":"center"} ,className='two columns'),
-        
-        html.Div([html.H5('Project Size (MW)', style = input_label_style),
-                  dcc.Input(id='inp_projsize', type='number', value=100, min=5),
-                  ], style = {"textAlign":"center"}, className='two columns'),
-        
-        html.Div([html.H5(children = 'Duration (hrs):', style = input_label_style),
-            dcc.Dropdown(id='ddn_duration', options=[
-                {'label': '2', 'value': 2},
-                {'label': '3', 'value': 3},
-                {'label': '4', 'value': 4},
-                {'label': '5', 'value': 5},
-                {'label': '6', 'value': 6},
-                {'label': '8', 'value': 8},
-                ], value= 4),
-        ], style = {"textAlign":"center"}, className='two columns'),
+    dbc.Row([
+        dbc.Col([
+            html.P('Run Sizing', id='generate_sizing', className="btn btn-primary mt-4")
+        ], width = {'size':2})
 
-        html.Div([
-            html.H5(children = 'Number of Cycles per Year', style = input_label_style),
-            dcc.Dropdown(id='ddn_cyc', options=[
-                        {'label': '180', 'value': 180},
-                        {'label': '365', 'value': 365},
-                        {'label': '548', 'value': 548},
-                        {'label': '730', 'value': 730},
-                        ], value= 365),
-        ], style = {"textAlign":"center", 'font-size': '1em'}, className='two columns'),
+    ], justify='center'),
 
-        html.Div([
-            html.H5('Point of Measurement', style = input_label_style),
-            dcc.Dropdown(id='ddn_pom', options=[
-                {'label': 'AC Terminals of Inverter', 'value': 'AC Terminals of Inverter'},
-                {'label': 'High Side of Medium Voltage Transformer', 'value': 'High Side of Medium Voltage Transformer'},
-                {'label': 'Medium Voltage POM', 'value': 'Medium Voltage POM'},
-                {'label': 'High Side of HV Transformer', 'value': 'High Side of HV Transformer'},
-                {'label': 'High Voltage POM', 'value': 'High Voltage POM'},
-                ], value= 'High Side of HV Transformer', style = {'font-size': '0.94em'}),
-        ], style = {"textAlign":"center"}, className='two columns'),
+    dbc.Row([
+        dbc.Col([
+            html.H4('Energy Plot', className = "mt-4"),
+            dbc.Spinner(dcc.Graph(id = "plot", style = {"height":"80vh"}))
+        ], width = {'size':9}),
 
-    ], className='row'),
+        dbc.Col([
+            html.H4('Downloads Section:', className = "mt-4"),
+
+            html.A([
+                html.Button('Step 1 - Generate Technical Proposal',  id='generate_pdf', style={'width':'230px'},className="btn btn-primary mt-4"),
+                dbc.Spinner(html.A('Step 2 - Download Technical Proposal', id='download_pdf', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
+                    ]),
+            html.Br(),
+            html.A([
+                html.Button('Step 1 - Generate Cost Memo',  id='generate_cost_memo', style={'width':'230px'},className="btn btn-primary mt-4"),
+                dbc.Spinner(html.A('Step 2 - Download Cost Memo', id='download_cost_memo', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
+                    ]),
+            html.Br(),
+            html.A([
+                html.Button('Step 1 - Generate GA',  id='generate_GA', style={'width':'230px'},className="btn btn-primary mt-4"),
+                dbc.Spinner(html.A('Step 2 - Download GA', id='download_GA', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
+                    ]),
+            html.Br(),
+            html.A([
+                html.Button('Step 1 - Generate SLD',  id='generate_SLD', style={'width':'230px'},className="btn btn-primary mt-4"),
+                dbc.Spinner(html.A('Step 2 - Download SLD', id='download_SLD', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
+                    ]),
+
+        ], width = {'size':3}),
+
+    ], justify='around'),
 
 html.Br(),
-
-
-    html.Div([
-          
-        html.Div([html.H5('Compliance Code', style = input_label_style),
-            dcc.Dropdown(id='ddn_rmu', options=[
-                        {'label': 'UL', 'value': 'UL'},
-                        {'label': 'IEC', 'value': 'IEC'}
-                        ], value= 'UL'),
-                        ],style = {"textAlign":"center"}, className='two columns'),
-
-        html.Div([html.H5('Power Factor', style = input_label_style),
-                    dcc.Dropdown(id='ddn_pf', options=[
-                                {'label': '0.90', 'value': 0.90},
-                                {'label': '0.95', 'value': 0.95}
-                                ], value= 0.95),]
-                ,style = {"textAlign":"center"}, className='two columns'),
-
-
-        html.Div([html.H5('Max Site Temperature (deg C)', style = input_label_style),
-                dcc.Input(id='inp_temp', type='number', value=40, max=50),
-                ], style = {"textAlign":"center"}, className='two columns'),
-
-        html.Div([html.H5('BOL Oversize (until End of Year)', style = input_label_style),
-                dcc.Input(id='inp_overize', type='number', value=3, min=0),], style = {"textAlign":"center"}, className='two columns'),
-
-        html.Div([html.H5("Project Life (years)", style = input_label_style),
-                  dcc.Input(id='inp_projlife', type='number', value=20, min=3, max=20),
-                  ], style = {"textAlign":"center"},className='two columns'),
-
-        html.Div([html.H5("Number of Augmentations", style = input_label_style),
-                  dcc.Input(id='inp_aug', type='number', value=4, min=0),]
-                 ,style = {"textAlign":"center"} ,className='two columns'),
-
-
-    ], className='row'),
-
-    html.Br(),
-
-    html.Div([html.H5("")], className='three columns'),
-
-            html.Div([html.H5("Technical Proposal to include Flat Energy Guarantees", style = input_label_style),
-                  dcc.RadioItems(id='inp_flt_gua', options = ['Yes', 'No'], value = 'No', inline=True)]
-                 ,style = {"textAlign":"center"} ,className='five columns'),
-
-    
-    html.Br(),
-
-    html.Br(),
-
-    html.Br(),
-
-    html.Div([
-        
-        html.Div([html.H5("")], className='five columns'),
-        
-        html.Button('Run Sizing', id='generate_sizing', className='two columns', style = button_style), 
-
-    ]),
-    
-    
-
-    html.Br(),
-
-    html.Br(),
-
-
-    html.Div([
-        html.Div([html.H5("")], className='one columns'),
-        html.H2(children='Energy Plot', className='ten columns'),
-
-    ], className='row'),
-
-    html.Div([
-        html.Div([html.H5("")], className='one columns'),
-        dcc.Loading(dcc.Graph(id = "plot", style = {"height":"80vh"},  className='ten columns')),
-
-    ], className='row'),
-
-    html.Div([
-        html.Div([html.H5("")], className='one columns'),
-        html.H2(children='BOL Configuration Table', className='four columns'),
-        html.H2(children='Augmentation Table', className='four columns'),       
-                ], className='row'),
-
-    html.Div([
-        html.Div([html.H5("")], className='one columns'),
-        dbc.Container([html.P(id = "bol_config"), 
-                    ], className='three columns'),
-        html.Div([html.H5("")], className='one columns'),        
-        dbc.Container([html.P(id = "aug_energy_table"),
-                    ], className='three columns'),
-                ], className='row'),
-
-
-html.Br(),
-
-html.Div([
-        html.Div([html.H5("")], className='three columns'),
-        html.H2(children='Power Energy and RTE Table', className='four columns'),     
-], className='row'), 
-
-html.Div([
-        html.Div([html.H5("")], className='three columns'),
-        dbc.Container([html.P(id = "power_energy_rte_table"), 
-                        ], className='five columns'),
-            
-                ],  className='row'),
-
 html.Br(),
 
 html.Div([
@@ -230,71 +211,15 @@ html.Div([
 
 ]),
 
-html.Br(),
 
-html.Div([
-    html.Div([html.H5("")], className='three columns'),
-    html.Button('Step 1 - Generate Technical Proposal', id='generate-pdf-button', style=button_style, className='three columns'),
-    dcc.Loading(children = html.A('Step 2 - Download Technical Proposal', id='download-pdf', href='', \
-                                  className='three columns', style= {"textAlign":"center", 'border-radius': '4px', \
-                                                                     'border': '1px solid navy','background-color': 'rgb(127, 81, 185)',\
-                                                                          'color': 'white', 'height': '38px', 'padding': '8px'}), type="circle")
-        ]),
 
-html.Br(),
-html.Br(),
-html.Br(),
-
-html.Div([
-    html.Div([html.H5("")], className='three columns'),
-    html.Button('Step 1 - Generate Cost Memo', id='generate_cost_memo', style=button_style, className='three columns'),
-    dcc.Loading(children = html.A('Step 2 - Download Cost Memo', id='download_cost_memo', href='', \
-                                  className='three columns', style= {"textAlign":"center", 'border-radius': '4px', \
-                                                                     'border': '1px solid navy','background-color': 'rgb(127, 81, 185)',\
-                                                                          'color': 'white', 'height': '38px', 'padding': '8px'}), type="circle")
-        ]),
-
-html.Br(),
-html.Br(),
-html.Br(),
-
-html.Div([
-    html.Div([html.H5("")], className='three columns'),
-    html.Button('Step 1 - Generate GA', id='generate_GA', style=button_style, className='three columns'),
-    dcc.Loading(children = html.A('Step 2 - Download GA', id='download_GA', href='', \
-                                  className='three columns', style= {"textAlign":"center", 'border-radius': '4px', \
-                                                                     'border': '1px solid navy','background-color': 'rgb(127, 81, 185)',\
-                                                                          'color': 'white', 'height': '38px', 'padding': '8px'}), type="circle")
-        ]),
-
-html.Br(),
-html.Br(),
-html.Br(),
-
-html.Div([
-    html.Div([html.H5("")], className='three columns'),
-    html.Button('Step 1 - Generate SLD', id='generate_SLD', style=button_style, className='three columns'),
-    dcc.Loading(children = html.A('Step 2 - Download SLD', id='download_SLD', href='', \
-                                  className='three columns', style= {"textAlign":"center", 'border-radius': '4px', \
-                                                                     'border': '1px solid navy','background-color': 'rgb(127, 81, 185)',\
-                                                                          'color': 'white', 'height': '38px', 'padding': '8px'}), type="circle")
-        ]),
-
-html.Br(),
-html.Br(),
-html.Br(),
-
-])
-
+], fluid=True)
 
 
 # Define callback to update the output
 
 @app.callback(
     Output('plot', 'figure'),
-    Output('bol_config', 'children'),
-    Output('aug_energy_table', 'children'),
-    Output('power_energy_rte_table', 'children'),
     Output('stored_energy_plot', 'data'),
     Output('stored_bill_of_materials', 'data'),
     Output('stored_design_summary', 'data'),
@@ -332,8 +257,9 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
                     oversize_required, project_life, number_of_augmentations, flat_guarantee, \
                         n_clicks):
     
+
     if n_clicks:
-    
+
         fig, bol_config, aug_energy_table, power_energy_rte_table, \
             bill_of_materials, design_summary, losses_table, bol_design_summary, \
                 plot_title, y_axis_range, months_to_COD, block_type, \
@@ -381,10 +307,6 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         bol_config = table_format(bol_config)
 
 
-        aug_energy_dict = table_format(aug_energy_table)
-        
-        power_energy_rte_dict = table_format(power_energy_rte_table)
-
         fig_stored = fig
 
         bill_of_materials_stored = bill_of_materials.to_dict()
@@ -402,7 +324,8 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         cost_memo_table_stored = cost_memo_table.to_dict()
 
         n_clicks = 0
-        return fig, bol_config, aug_energy_dict, power_energy_rte_dict, fig_stored, bill_of_materials_stored, design_summary_stored, \
+
+        return fig, fig_stored, bill_of_materials_stored, design_summary_stored, \
     losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, \
         months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, n_clicks
 
@@ -411,9 +334,9 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
 
 
 @app.callback(
-Output('download-pdf', 'href'),
-Output('generate-pdf-button', 'n_clicks'),
- [Input('generate-pdf-button', 'n_clicks'),
+Output('download_pdf', 'href'),
+Output('generate_pdf', 'n_clicks'),
+ [Input('generate_pdf', 'n_clicks'),
   Input('inp_projloct', 'value'),
   Input('inp_projnm', 'value'),
   Input('inp_projsize', 'value'),
@@ -433,10 +356,13 @@ Output('generate-pdf-button', 'n_clicks'),
  ]
 )
 
-def update_pdf(n_clicks ,proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
+def update_pdf(n_clicks, proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
                                     bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type):
     
+
+
     if n_clicks:
+
         # Generate PDF
         pdf_file = '/download/{}'.format(create_tech_proposal(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
                                   bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type))
@@ -461,13 +387,11 @@ Output('generate_cost_memo', 'n_clicks'),
 )
 
 def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_req, duration, aug_energy_table):
-    
-    if n_clicks:
-        # Generate PDF
+
+    if n_clicks:        # Generate PDF
         cost_memo_pdf = '/download/{}'.format(create_cost_memo(cost_memo_table, proj_location, proj_name, power_req, \
                                                                duration, aug_energy_table))
         n_clicks = 0
-
     else:
         # If button is not clicked, do nothing
         cost_memo_pdf = ''
@@ -489,12 +413,11 @@ Output('generate_GA', 'n_clicks'),
 )
 
 def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug):
-
+    
     if n_clicks:
         # Generate PDF
         GA_PDF = '/download/{}'.format(create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug))
         n_clicks = 0
-
     else:
         # If button is not clicked, do nothing
         GA_PDF = ''
