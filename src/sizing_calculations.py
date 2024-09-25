@@ -446,7 +446,7 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     
     fig.add_trace(go.Scatter(x = x_param, y = aug_energy_start_of_year, name= "Net Energy @ POM 1", mode = "markers", marker=dict(symbol = "circle", color='purple', size = 10), showlegend=False))
 
-    fig.add_trace(go.Line(x = x_param, y = len(x_param)*[energy_req],  name= "Net Energy Required @ POM", marker=dict(color ="red")))
+    fig.add_trace(go.Scatter(x = x_param, y = len(x_param)*[energy_req],  mode='lines', name= "Net Energy Required @ POM", marker=dict(color ="red")))
 
     fig.update_layout(title={"text": str(proj_location) + " | " + str(proj_name) + " | " + str(energy_req) + " MWh Energy Capacity @ "+ str(point_of_measurement) + " | " + str(number_cycles) + " cycles/year", "x" : 0.5, "y" : 0.9},#,"y"：8.97，"x"：8.5，"anchor": "center","yanchor": "top"}, 
         

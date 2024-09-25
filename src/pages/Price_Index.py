@@ -8,10 +8,16 @@ from dash import dcc
 import pandas as pd
 
 from price_scraper import price_scraper_function
+from trends_plot import trends_plot_fig
+
+# URL of the raw CSV file on GitHub
+url = "https://github.com/he-man-shoo/scraper/raw/refs/heads/main/Price%20Data.xlsx"
+
+# Read the CSV file directly from GitHub into a Pandas DataFrame
+df = pd.read_excel(url)
 
 
-
-dash.register_page(__name__, name = "Price Index")
+dash.register_page(__name__, name = "Price Index", order=2)
 
 # Define the layout of the website
 layout = dbc.Container([
@@ -34,6 +40,15 @@ layout = dbc.Container([
 
     ], justify='around', align='center'), 
 
+    html.Br(), 
+
+    dbc.Row([
+        dbc.Col([
+            dbc.Spinner(dcc.Graph(id = "price_trend", figure=trends_plot_fig(df)))
+        ], width = {'size':12})
+    ], justify='center', align='center'),
+
+
     html.Br(),
 
     dbc.Row([
@@ -50,13 +65,15 @@ layout = dbc.Container([
                 dbc.Spinner(html.Div(id="xchange_rt"))], width = {'size':3}),
     ], justify='around', align='center'),
 
+    html.Br(), 
+    
     dbc.Row([
         dbc.Col([
             html.P('Get Current Prices', id='current_prices', className="btn btn-primary mt-4")
         ], width = {'size':3}), 
 
         dbc.Col([
-            html.P('Get Historical Data', id='historical_data', className="btn btn-primary mt-4"),
+            html.P('Get Raw Data', id='historical_data', className="btn btn-primary mt-4"),
             dcc.Download(id="download_df_xlsx")
         
         ], width = {'size':3})
@@ -82,6 +99,8 @@ def scrape(n_clicks):
             l.append('{:,.2f}'.format(i))
 
         n_clicks = 0
+        
+
         return l[0], l[1], l[2], l[3], n_clicks
     else:
         raise PreventUpdate
@@ -92,12 +111,6 @@ def scrape(n_clicks):
 )
 def download_historic_data(n_clicks):
     if n_clicks:
-        # URL of the raw CSV file on GitHub
-        url = "https://github.com/he-man-shoo/scraper/raw/refs/heads/main/Price%20Data.xlsx"
-
-        # Read the CSV file directly from GitHub into a Pandas DataFrame
-        df = pd.read_excel(url)
-
         return dcc.send_data_frame(df.to_excel, "Historic Price Indices.xlsx")
     else:
         raise PreventUpdate

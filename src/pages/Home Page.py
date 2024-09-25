@@ -18,7 +18,7 @@ from general_arrangement import create_GA
 from sld import create_SLD
 
 
-dash.register_page(__name__, name = "Home", path='/')
+dash.register_page(__name__, name = "Home", path='/', order=1)
 
 input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
 
