@@ -32,16 +32,16 @@ VALID_USERNAME_PASSWORD_PAIRS = {
 
 
 # Initialize the Dash app
-app = dash.Dash(server=server, external_stylesheets=["https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/litera/bootstrap.min.css"],
+app = dash.Dash(server=server, use_pages=True, external_stylesheets=["https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/litera/bootstrap.min.css"],
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}]
                 )
 server = app.server
 
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
+# auth = dash_auth.BasicAuth(
+#     app,
+#     VALID_USERNAME_PASSWORD_PAIRS
+# )
 
 input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
 
@@ -49,408 +49,33 @@ button_style = {'width':'200px','border-radius': '4px', 'font-size': '1.25rem', 
 
 logo = Image.open("Prevalon Logo.jpg")
 
+page_layout = []
+
+for page in dash.page_registry.values():
+    page_layout.append(dbc.NavItem(dbc.NavLink(page["name"], href=page["path"], active="exact")))
+
 # Define the layout of the website
 app.layout = dbc.Container([
 
     dbc.Row([
-                dbc.Col(html.Img(src = logo, width=180),
+                dbc.Col(
+                    html.A(
+                        children=html.Img(src = logo, width=180),
+                        href= 'https://prevalonenergy.com/', 
+                        target="_blank"
+                    ),
                     width = {'size':3}),
                 dbc.NavbarSimple(
-                    children=[
-                        dbc.NavItem(dbc.NavLink("Home", href="/")),
-                        dbc.NavItem(dbc.NavLink("Project Scheduler", href="#")),
-                        dbc.NavItem(dbc.NavLink("Financials", href="#")),
-
-                    ],
+                    children = page_layout,
                     color="primary",
                     dark=True)
                     ],justify='between'),
-
-    dbc.Row([
-        dbc.Col(html.H2("Indicative Sizing Tool", 
-                        className='text-center text-primary-emphasis'),
-                        width = {'size':6})
-    ], justify='around', align='center'),
     
-    html.Br(),
-
-    dbc.Row([
-        dbc.Col([
-                html.P("Project Location", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_projloct', value="Lake Mary", className='form-control form-control-sm'),
-
-                html.P("Number of Cycles per Year", className='col-form-label col-form-label-sm mt-2'),
-                dcc.Dropdown(id='ddn_cyc', options=[{'label':x, 'value':x}
-                                                         for x in [180, 365, 548, 730]], value = 365, style={'fontSize':'14px'}),
-
-                html.P("Max Site Temperature (deg C)", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_temp', type='number', value=40, max=50, className='form-control form-control-sm'),
-
-
-        ], width = {'size':3}),
-        dbc.Col([
-                html.P("Project Name", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_projnm', value="Pilot Project", className='form-control form-control-sm'),
-
-                html.P("Point of Measurement", className='col-form-label col-form-label-sm mt-2'),
-                dcc.Dropdown(id='ddn_pom', value = 'High Side of HV Transformer', 
-                             options=[{'label':x, 'value':x}
-                                                         for x in ['AC Terminals of Inverter', \
-                                                                   'High Side of Medium Voltage Transformer', \
-                                                                    'Medium Voltage POM', \
-                                                                        'High Side of HV Transformer',\
-                                                                            'High Voltage POM']], style={'fontSize':'14px'}),
-
-
-                html.P("Project Life (Years)", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_projlife', type='number', value=20, min=3, max=20, className='form-control form-control-sm'),
-
-
-        ], width = {'size':3}),
-    dbc.Col([
-
-                html.P("Project Size (MW)", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_projsize', type='number', value=100, min=5, className='form-control form-control-sm'),
-
-                html.P("Power Factor", className='col-form-label col-form-label-sm mt-2'),
-                dcc.Dropdown(id = 'ddn_pf', options=[{'label':x, 'value':x}
-                                                         for x in [0.90, 0.95]], value = 0.95, style={'fontSize':'14px'}),
-                
-                html.P("BOL Oversize (until End of Year)", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_overize', type='number', value=3, min=0, className='form-control form-control-sm'),
- 
-
-        ], width = {'size':3}),
-
-    dbc.Col([
-                html.P("Project Duration (hrs)", className='col-form-label col-form-label-sm mt-2'),
-                dcc.Dropdown(id='ddn_duration', options=[{'label':x, 'value':x}
-                                                         for x in [2, 3, 4, 5, 6, 8]], value = 4, style={'fontSize':'14px'}),
-
-                html.P("Complaince Code", className='col-form-label col-form-label-sm mt-2'),
-                dcc.Dropdown(id = 'ddn_rmu', options=[{'label':x, 'value':x}
-                                                         for x in ["UL", "IEC"]], value = "UL", style={'fontSize':'14px'}),
-
-                html.P("Number of Augmentations", className='col-form-label col-form-label-sm mt-2'),
-                dbc.Input(id='inp_aug', type='number', value=4, min=0, className='form-control form-control-sm'),
-
-        ], width = {'size':3}),
-
-    ], justify='around'),
-
-    dbc.Row([
-        dbc.Col([
-                html.P("Technical Proposal to include Flat Energy Guarantees", className='col-form-label col-form-label-sm mt-2'),
-                dcc.Dropdown(id = 'inp_flt_gua', options=[{'label':x, 'value':x}
-                                                         for x in ["Yes", "No"]], value = "No", style={'fontSize':'14px'}),
-
-        ], width = {'size':4})
-    ], justify='center'),
-    
-    dbc.Row([
-        dbc.Col([
-            html.P('Run Sizing', id='generate_sizing', className="btn btn-primary mt-4")
-        ], width = {'size':2})
-
-    ], justify='center'),
-
-    dbc.Row([
-        dbc.Col([
-            html.H4('Energy Plot', className = "mt-4"),
-            dbc.Spinner(dcc.Graph(id = "plot", style = {"height":"80vh"}))
-        ], width = {'size':9}),
-
-        dbc.Col([
-            html.H4('Downloads Section:', className = "mt-4"),
-
-            html.A([
-                html.Button('Step 1 - Generate Technical Proposal',  id='generate_pdf', style={'width':'230px'},className="btn btn-primary mt-4"),
-                dbc.Spinner(html.A('Step 2 - Download Technical Proposal', id='download_pdf', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
-                    ]),
-            html.Br(),
-            html.A([
-                html.Button('Step 1 - Generate Cost Memo',  id='generate_cost_memo', style={'width':'230px'},className="btn btn-primary mt-4"),
-                dbc.Spinner(html.A('Step 2 - Download Cost Memo', id='download_cost_memo', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
-                    ]),
-            html.Br(),
-            html.A([
-                html.Button('Step 1 - Generate GA',  id='generate_GA', style={'width':'230px'},className="btn btn-primary mt-4"),
-                dbc.Spinner(html.A('Step 2 - Download GA', id='download_GA', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
-                    ]),
-            html.Br(),
-            html.A([
-                html.Button('Step 1 - Generate SLD',  id='generate_SLD', style={'width':'230px'},className="btn btn-primary mt-4"),
-                dbc.Spinner(html.A('Step 2 - Download SLD', id='download_SLD', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
-                    ]),
-
-        ], width = {'size':3}),
-
-    ], justify='around'),
-
-html.Br(),
-html.Br(),
-
-html.Div([
-    dash.dcc.Store(id = "stored_energy_plot"),
-    dash.dcc.Store(id = "stored_bill_of_materials"),
-    dash.dcc.Store(id = "stored_design_summary"),
-    dash.dcc.Store(id = "stored_losses_table"),
-    dash.dcc.Store(id = "stored_bol_design_summary"),
-    dash.dcc.Store(id = "stored_aug_energy_table"),
-    dash.dcc.Store(id = "stored_power_energy_rte_table"),
-    dash.dcc.Store(id = "stored_plot_title"),
-    dash.dcc.Store(id = "stored_y_axis_range"),
-    dash.dcc.Store(id = "stored_months_to_COD"),
-    dash.dcc.Store(id = "stored_block_type"),
-    dash.dcc.Store(id = "stored_cost_memo_table"),
-    dash.dcc.Store(id = "stored_PCS_kVA_string"),
-    dash.dcc.Store(id = "stored_BESS_Rating"),
-    dash.dcc.Store(id = "stored_PCS_AC_Voltage"),
-    dash.dcc.Store(id = "stored_PCS_model"),
-
-
-]),
-
-
+    dbc.Container([
+        dash.page_container
+    ], fluid=True), 
 
 ], fluid=True)
-
-
-# Define callback to update the output
-
-@app.callback(
-    Output('plot', 'figure'),
-    Output('stored_energy_plot', 'data'),
-    Output('stored_bill_of_materials', 'data'),
-    Output('stored_design_summary', 'data'),
-    Output('stored_losses_table', 'data'),
-    Output('stored_bol_design_summary', 'data'),
-    Output('stored_aug_energy_table', 'data'),
-    Output('stored_power_energy_rte_table', 'data'),
-    Output('stored_plot_title', 'data'),
-    Output('stored_y_axis_range', 'data'),
-    Output('stored_months_to_COD', 'data'),
-    Output('stored_block_type', 'data'),
-    Output('stored_cost_memo_table', 'data'),
-    Output('stored_PCS_kVA_string', 'data'),
-    Output('stored_BESS_Rating', 'data'),
-    Output('stored_PCS_AC_Voltage', 'data'),
-    Output('stored_PCS_model', 'data'),
-    Output('generate_sizing', 'n_clicks'),
-    [Input('inp_projloct', 'value'),
-     Input('inp_projnm', 'value'),
-     Input('inp_projsize', 'value'),
-     Input('ddn_duration', 'value'),
-     Input('ddn_cyc', 'value'),
-     Input('ddn_pom', 'value'),
-     Input('ddn_rmu', 'value'),
-     Input('ddn_pf', 'value'),
-     Input('inp_temp', 'value'),
-     Input('inp_overize', 'value'),
-     Input('inp_projlife', 'value'),
-     Input('inp_aug', 'value'),
-     Input('inp_flt_gua', 'value'),
-     Input('generate_sizing', 'n_clicks'),]
-)
-def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
-                   point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, \
-                    oversize_required, project_life, number_of_augmentations, flat_guarantee, \
-                        n_clicks):
-    
-
-    if n_clicks:
-
-        fig, bol_config, aug_energy_table, power_energy_rte_table, \
-            bill_of_materials, design_summary, losses_table, bol_design_summary, \
-                plot_title, y_axis_range, months_to_COD, block_type, \
-                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
-    
-        def table_format(table):
-            return dash.dash_table.DataTable(table.to_dict('records', index=True), 
-                                                style_data={
-                                                            'color': 'black',
-                                                            'backgroundColor': 'white', 
-                                                            'font-family':'arial',
-                                                            'font-size': '11px',
-                                                            'border': '1px solid black',
-                                                            'textAlign': 'center',
-                                                            },
-                                                style_data_conditional=[
-                                                                        {
-                                                                        'if': {'row_index': 'odd'},
-                                                                        'backgroundColor': 'rgb(220, 207, 235)',
-                                                                        }, 
-
-                                                                        {
-                                                                        'if': {'column_id': 'Total Cost per component ($)', 'row_index': 3},
-                                                                        'fontWeight': 'bold',
-                                                                        },
-
-                                                                        {
-                                                                        'if': {'column_id': 'Component', 'row_index': 3},
-                                                                        'fontWeight': 'bold',
-                                                                        },
-
-                                                                    ],
-
-                                                style_header={
-                                                                'backgroundColor': 'rgb(127, 81, 185)',
-                                                                'color': 'white',
-                                                                'fontWeight': 'bold',
-                                                                'font-family':'Helvetica',
-                                                                'font-size': '12px',
-                                                                'border': '1px solid black',
-                                                                'textAlign': 'center',
-                                                            })
-            
-
-        bol_config = table_format(bol_config)
-
-
-        fig_stored = fig
-
-        bill_of_materials_stored = bill_of_materials.to_dict()
-
-        design_summary_stored = design_summary.to_dict()
-
-        losses_table_stored = losses_table.to_dict()
-
-        bol_design_summary_stored = bol_design_summary.to_dict()
-
-        aug_energy_table_stored = aug_energy_table.to_dict()
-
-        power_energy_rte_table_stored = power_energy_rte_table.to_dict()
-
-        cost_memo_table_stored = cost_memo_table.to_dict()
-
-        n_clicks = 0
-
-        return fig, fig_stored, bill_of_materials_stored, design_summary_stored, \
-    losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, \
-        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, n_clicks
-
-    else:
-        raise PreventUpdate
-
-
-@app.callback(
-Output('download_pdf', 'href'),
-Output('generate_pdf', 'n_clicks'),
- [Input('generate_pdf', 'n_clicks'),
-  Input('inp_projloct', 'value'),
-  Input('inp_projnm', 'value'),
-  Input('inp_projsize', 'value'),
-  Input('ddn_duration', 'value'),
-  Input('inp_projlife', 'value'),
-  Input('stored_energy_plot', 'data'),
-  Input('stored_bill_of_materials', 'data'),
-  Input('stored_design_summary', 'data'),
-  Input('stored_losses_table', 'data'),
-  Input('stored_bol_design_summary', 'data'),
-  Input('stored_aug_energy_table', 'data'),
-  Input('stored_power_energy_rte_table', 'data'),
-  Input('stored_plot_title', 'data'),
-  Input('stored_y_axis_range', 'data'),
-  Input('stored_months_to_COD', 'data'),
-  Input('stored_block_type', 'data'),
- ]
-)
-
-def update_pdf(n_clicks, proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                    bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type):
-    
-
-
-    if n_clicks:
-
-        # Generate PDF
-        pdf_file = '/download/{}'.format(create_tech_proposal(proj_location, proj_name, power_req, duration, project_life, fig, bill_of_materials, design_summary, losses_table, \
-                                  bol_design_summary, aug_energy_table, power_energy_rte_table, plot_title, y_axis_range, months_to_COD, block_type))
-        n_clicks = 0
-    else:
-        # If button is not clicked, do nothing
-        pdf_file = ''
-    return pdf_file, n_clicks
-
-
-@app.callback(
-Output('download_cost_memo', 'href'),
-Output('generate_cost_memo', 'n_clicks'),
- [Input('generate_cost_memo', 'n_clicks'),
-  Input('stored_cost_memo_table', 'data'),
-  Input('inp_projloct', 'value'),
-  Input('inp_projnm', 'value'),
-  Input('inp_projsize', 'value'),
-  Input('ddn_duration', 'value'),
-  Input('stored_aug_energy_table', 'data'),
- ]
-)
-
-def update_cost_memo(n_clicks, cost_memo_table, proj_location, proj_name, power_req, duration, aug_energy_table):
-
-    if n_clicks:        # Generate PDF
-        cost_memo_pdf = '/download/{}'.format(create_cost_memo(cost_memo_table, proj_location, proj_name, power_req, \
-                                                               duration, aug_energy_table))
-        n_clicks = 0
-    else:
-        # If button is not clicked, do nothing
-        cost_memo_pdf = ''
-    return cost_memo_pdf, n_clicks
-
-@app.callback(
-Output('download_GA', 'href'),
-Output('generate_GA', 'n_clicks'),
- [Input('generate_GA', 'n_clicks'),
-  Input('inp_projloct', 'value'),
-  Input('inp_projnm', 'value'),
-  Input('inp_projsize', 'value'),
-  Input('ddn_duration', 'value'),
-  Input('stored_bol_design_summary', 'data'),
-  Input('stored_PCS_kVA_string', 'data'),
-  Input('stored_BESS_Rating', 'data'),
-  Input('stored_aug_energy_table', 'data'), 
- ]
-)
-
-def update_GA(n_clicks, proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug):
-    
-    if n_clicks:
-        # Generate PDF
-        GA_PDF = '/download/{}'.format(create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string, BESS_Rating, aug))
-        n_clicks = 0
-    else:
-        # If button is not clicked, do nothing
-        GA_PDF = ''
-    return GA_PDF, n_clicks
-
-@app.callback(
-Output('download_SLD', 'href'),
-Output('generate_SLD', 'n_clicks'),
- [Input('generate_SLD', 'n_clicks'),
-  Input('inp_projloct', 'value'),
-  Input('inp_projnm', 'value'),
-  Input('inp_projsize', 'value'),
-  Input('ddn_duration', 'value'),
-  Input('ddn_rmu', 'value'),
-  Input('stored_bol_design_summary', 'data'),
-  Input('stored_PCS_kVA_string', 'data'),
-  Input('stored_PCS_AC_Voltage', 'data'),
-  Input('stored_PCS_model', 'data'),
- ]
-)
-
-def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage, PCS_model):
-    
-    if n_clicks:
-        # Generate PDF
-        SLD_PDF = '/download/{}'.format(create_SLD(proj_location, proj_name, power_req, duration, complaince_code, bol, PCS_String, PCS_AC_Voltage, PCS_model))
-        n_clicks = 0
-
-    else:
-        # If button is not clicked, do nothing
-        SLD_PDF = ''
-
-    return SLD_PDF, n_clicks
 
 
 @app.server.route('/download/<path:path>')

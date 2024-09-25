@@ -58,7 +58,12 @@ for page in dash.page_registry.values():
 app.layout = dbc.Container([
 
     dbc.Row([
-                dbc.Col(html.Img(src = logo, width=180),
+                dbc.Col(
+                    html.A(
+                        children=html.Img(src = logo, width=180),
+                        href= 'https://prevalonenergy.com/', 
+                        target="_blank"
+                    ),
                     width = {'size':3}),
                 dbc.NavbarSimple(
                     children = page_layout,
