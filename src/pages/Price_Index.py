@@ -10,12 +10,6 @@ import pandas as pd
 from price_scraper import price_scraper_function
 from trends_plot import trends_plot_fig
 
-# URL of the raw CSV file on GitHub
-url = "https://github.com/he-man-shoo/scraper/raw/refs/heads/main/Price%20Data.xlsx"
-
-# Read the CSV file directly from GitHub into a Pandas DataFrame
-df = pd.read_excel(url)
-
 
 dash.register_page(__name__, name = "Price Index", order=2)
 
@@ -40,17 +34,6 @@ layout = dbc.Container([
 
     ], justify='around', align='center'), 
 
-    html.Br(), 
-
-    dbc.Row([
-        dbc.Col([
-            dbc.Spinner(dcc.Graph(id = "price_trend", figure=trends_plot_fig(df)))
-        ], width = {'size':12})
-    ], justify='center', align='center'),
-
-
-    html.Br(),
-
     dbc.Row([
         dbc.Col([html.P("Original (CNY/mt)", className="card-text"), 
                 dbc.Spinner(html.Div(id="original"))], xs=12, sm=12, md=12, lg=3, xl=3),
@@ -72,12 +55,31 @@ layout = dbc.Container([
             html.P('Get Current Prices', id='current_prices', className="btn btn-primary mt-4")
         ], xs=12, sm=12, md=12, lg=3, xl=3), 
 
+    ], justify='center', align='center'), 
+
+    html.Br(), 
+
+    dbc.Row([
+        dbc.Col([
+            dbc.Spinner(dcc.Graph(id = "price_trend"))
+        ], width = {'size':12})
+    ], justify='center', align='center'),
+   
+    html.Br(), 
+
+    dbc.Row([
+        dbc.Col([
+            html.P('Get Current Trends', id='current_trends', className="btn btn-primary mt-4")
+        ], xs=12, sm=12, md=12, lg=3, xl=3), 
+
         dbc.Col([
             html.P('Get Raw Data', id='historical_data', className="btn btn-primary mt-4"),
             dcc.Download(id="download_df_xlsx")
         
         ], xs=12, sm=12, md=12, lg=3, xl=3)
     ], justify='center', align='center'), 
+
+    html.Br(),
 
 ], fluid=True), 
 
@@ -110,8 +112,31 @@ def scrape(n_clicks):
     Input("historical_data", "n_clicks"),
 )
 def download_historic_data(n_clicks):
+    # URL of the raw CSV file on GitHub
+    url = "https://github.com/he-man-shoo/scraper/raw/refs/heads/main/Price%20Data.xlsx"
+
+    # Read the CSV file directly from GitHub into a Pandas DataFrame
+    df = pd.read_excel(url)
+
     if n_clicks:
         return dcc.send_data_frame(df.to_excel, "Historic Price Indices.xlsx")
+    else:
+        raise PreventUpdate
+    
+
+@dash.callback(
+    Output("price_trend", "figure"),
+    Input("current_trends", "n_clicks"),
+)
+def download_historic_data(n_clicks):
+    # URL of the raw CSV file on GitHub
+    url = "https://github.com/he-man-shoo/scraper/raw/refs/heads/main/Price%20Data.xlsx"
+
+    # Read the CSV file directly from GitHub into a Pandas DataFrame
+    df = pd.read_excel(url)
+
+    if n_clicks:
+        return trends_plot_fig(df)
     else:
         raise PreventUpdate
     
