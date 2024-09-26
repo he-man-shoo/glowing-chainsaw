@@ -32,7 +32,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col(html.H2("Indicative Sizing Tool", 
                         className='text-center text-primary-emphasis'),
-                        width = {'size':6})
+                        xs=12, sm=12, md=12, lg=6, xl=6)
     ], justify='around', align='center'),
     
     html.Br(),
@@ -50,7 +50,7 @@ layout = dbc.Container([
                 dbc.Input(id='inp_temp', type='number', value=40, max=50, className='form-control form-control-sm'),
 
 
-        ], width = {'size':3}),
+        ], xs=12, sm=12, md=12, lg=3, xl=3),
         dbc.Col([
                 html.P("Project Name", className='col-form-label col-form-label-sm mt-2'),
                 dbc.Input(id='inp_projnm', value="Pilot Project", className='form-control form-control-sm'),
@@ -69,7 +69,7 @@ layout = dbc.Container([
                 dbc.Input(id='inp_projlife', type='number', value=20, min=3, max=20, className='form-control form-control-sm'),
 
 
-        ], width = {'size':3}),
+        ], xs=12, sm=12, md=12, lg=3, xl=3),
     dbc.Col([
 
                 html.P("Project Size (MW)", className='col-form-label col-form-label-sm mt-2'),
@@ -83,7 +83,7 @@ layout = dbc.Container([
                 dbc.Input(id='inp_overize', type='number', value=3, min=0, className='form-control form-control-sm'),
  
 
-        ], width = {'size':3}),
+        ], xs=12, sm=12, md=12, lg=3, xl=3),
 
     dbc.Col([
                 html.P("Project Duration (hrs)", className='col-form-label col-form-label-sm mt-2'),
@@ -97,7 +97,7 @@ layout = dbc.Container([
                 html.P("Number of Augmentations", className='col-form-label col-form-label-sm mt-2'),
                 dbc.Input(id='inp_aug', type='number', value=4, min=0, className='form-control form-control-sm'),
 
-        ], width = {'size':3}),
+        ], xs=12, sm=12, md=12, lg=3, xl=3),
 
     ], justify='around'),
 
@@ -107,13 +107,13 @@ layout = dbc.Container([
                 dcc.Dropdown(id = 'inp_flt_gua', options=[{'label':x, 'value':x}
                                                          for x in ["Yes", "No"]], value = "No", style={'fontSize':'14px'}),
 
-        ], width = {'size':4})
+        ], xs=12, sm=12, md=12, lg=4, xl=4)
     ], justify='center'),
     
     dbc.Row([
         dbc.Col([
             html.P('Run Sizing', id='generate_sizing', className="btn btn-primary mt-4")
-        ], width = {'size':2})
+        ], xs=12, sm=12, md=12, lg=2, xl=2)
 
     ], justify='center'),
 
@@ -121,7 +121,7 @@ layout = dbc.Container([
         dbc.Col([
             html.H4('Energy Plot', className = "mt-4"),
             dbc.Spinner(dcc.Graph(id = "plot", style = {"height":"80vh"}))
-        ], width = {'size':9}),
+        ], xs=12, sm=12, md=12, lg=9, xl=9),
 
         dbc.Col([
             html.H4('Downloads Section:', className = "mt-4"),
@@ -146,7 +146,7 @@ layout = dbc.Container([
                 dbc.Spinner(html.A('Step 2 - Download SLD', id='download_SLD', href='',  style={'width':'230px'}, className="btn bg-warning mt-4")),
                     ]),
 
-        ], width = {'size':3}),
+        ], xs=12, sm=12, md=12, lg=3, xl=3),
 
     ], justify='around'),
 

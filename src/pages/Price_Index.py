@@ -24,7 +24,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col(html.H2("Price Index Dashboard", 
                         className='text-center text-primary-emphasis'),
-                        width = {'size':6})
+                        xs=12, sm=12, md=12, lg=6, xl=6)
     ], justify='around', align='center'),
 
     html.Br(),
@@ -32,11 +32,11 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.H4("Lithium Carbonate (99.5% Battery Grade) Price"),
-        ], width = {'size':10}),
+        ], xs=12, sm=12, md=12, lg=10, xl=10),
 
         dbc.Col([
             html.A("Reference Link", href='https://www.metal.com/Chemical-compound/201102250059', target="_blank"),
-        ], width = {'size':2}),
+        ], xs=12, sm=12, md=12, lg=2, xl=2),
 
     ], justify='around', align='center'), 
 
@@ -53,16 +53,16 @@ layout = dbc.Container([
 
     dbc.Row([
         dbc.Col([html.P("Original (CNY/mt)", className="card-text"), 
-                dbc.Spinner(html.Div(id="original"))], width = {'size':3}),
+                dbc.Spinner(html.Div(id="original"))], xs=12, sm=12, md=12, lg=3, xl=3),
 
         dbc.Col([html.P("VAT Included (USD/mt)"), 
-                dbc.Spinner(html.Div(id="vat_incl"))], width = {'size':3}),
+                dbc.Spinner(html.Div(id="vat_incl"))], xs=12, sm=12, md=12, lg=3, xl=3),
 
         dbc.Col([html.P("VAT Excluded (USD/mt)"), 
-                dbc.Spinner(html.Div(id="vat_excl"))], width = {'size':3}),
+                dbc.Spinner(html.Div(id="vat_excl"))], xs=12, sm=12, md=12, lg=3, xl=3),
 
         dbc.Col([html.P("Exchange Rate (USD/CNY)"), 
-                dbc.Spinner(html.Div(id="xchange_rt"))], width = {'size':3}),
+                dbc.Spinner(html.Div(id="xchange_rt"))], xs=12, sm=12, md=12, lg=3, xl=3),
     ], justify='around', align='center'),
 
     html.Br(), 
@@ -70,13 +70,13 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.P('Get Current Prices', id='current_prices', className="btn btn-primary mt-4")
-        ], width = {'size':3}), 
+        ], xs=12, sm=12, md=12, lg=3, xl=3), 
 
         dbc.Col([
             html.P('Get Raw Data', id='historical_data', className="btn btn-primary mt-4"),
             dcc.Download(id="download_df_xlsx")
         
-        ], width = {'size':3})
+        ], xs=12, sm=12, md=12, lg=3, xl=3)
     ], justify='center', align='center'), 
 
 ], fluid=True), 
