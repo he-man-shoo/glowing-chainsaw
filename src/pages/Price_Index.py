@@ -11,7 +11,7 @@ from price_scraper import price_scraper_function
 from trends_plot import trends_plot_fig
 
 
-dash.register_page(__name__, name = "Price Index", order=2)
+dash.register_page(__name__, name = "Price Index")
 
 # Define the layout of the website
 layout = dbc.Container([
@@ -52,7 +52,7 @@ layout = dbc.Container([
     
     dbc.Row([
         dbc.Col([
-            html.P('Get Current Prices', id='current_prices', className="btn btn-primary mt-4")
+            html.P('Get Current Prices', id='current_prices', className="text-center btn btn-primary mt-4")
         ], xs=12, sm=12, md=12, lg=3, xl=3), 
 
     ], justify='center', align='center'), 

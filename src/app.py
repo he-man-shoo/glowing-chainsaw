@@ -38,10 +38,10 @@ app = dash.Dash(server=server, use_pages=True, external_stylesheets=["https://cd
                 )
 server = app.server
 
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
+# auth = dash_auth.BasicAuth(
+#     app,
+#     VALID_USERNAME_PASSWORD_PAIRS
+# )
 
 input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
 
