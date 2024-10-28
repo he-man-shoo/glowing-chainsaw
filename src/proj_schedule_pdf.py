@@ -183,12 +183,12 @@ def create_proj_schedule_pdf(stored_fig_data, proj_schedule_stored, df_milestone
     content.append(title_paragraph)
     content.append(Paragraph("<br/><br/>", style_normal))
 
-    # Figure
-    fig = go.Figure(stored_fig_data['data'])
-    fig.write_image("schedule_gantt.png", height = 650, width=1400)
+    content.append(Paragraph("Project Schedule Gantt Chart", section_paragraph_style))
+    content.append(Paragraph("<br/><br/>", style_normal))
 
     # Add image to PDF
-    content.append(PlatypusImage('schedule_gantt.png', width=600, height=320))
+    content.append(PlatypusImage('schedule_gantt.png', width=750, height=380))
+    content.append(Paragraph("<br/><br/>", style_normal))
 
     content.append(Paragraph("Project Milestones", section_paragraph_style))
     content.append(Paragraph("<br/><br/>", style_normal))
@@ -206,24 +206,6 @@ def create_proj_schedule_pdf(stored_fig_data, proj_schedule_stored, df_milestone
     table_style = table_styles(df_critical_durations_data)
     table.setStyle(TableStyle(table_style))
     content.append(table)
-
-    # content.append(PlatypusImage('plot-schedule.png', width=600, height=320))
-
-    # content.append(Paragraph("<br/><br/>", style_normal))
-
-
-    # content.append(Paragraph("System Augmentation Plan", section_paragraph_style))
-
-    # content.append(Paragraph("<br/><br/>", style_normal))
-    
-    # if len(aug_energy_data) == 0:
-    #     content.append(Paragraph("Section NOT USED - Designed BESS has no Augmentations", style_normal))
-
-    # else:
-    #     table = Table(aug_energy_data)
-    #     table_style = table_styles(aug_energy_data)
-    #     table.setStyle(TableStyle(table_style))
-    #     content.append(table)
 
     doc.build(content, header, header)
     # Return the URL for the download link

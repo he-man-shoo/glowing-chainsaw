@@ -41,7 +41,19 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                                                         'textAlign': 'center',
                                                     })
 
+    def months_diff(start_date, end_date):
+        # Ensure start_date is before end_date
+        if start_date > end_date:
+            start_date, end_date = end_date, start_date
 
+        # Calculate the difference in years and months
+        year_diff = end_date.year - start_date.year
+        month_diff = end_date.month - start_date.month
+
+        # Total months difference
+        total_months = year_diff * 12 + month_diff
+
+        return total_months
 
 
 
@@ -560,76 +572,101 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         
     df_3.reset_index(drop=True, inplace=True)
 
+    def create_gantt(df_3, proj_milestones_combined, paym_milestones_combined):
 
-    custom_colors = {
-        'Drawing Confirmation': 'rgb(245,225,164)',
-        'Manufacturing': 'rgb(252,215,87)',
-        'Shipment': 'rgb(99,102,106)',
-        'Installation': 'rgb(208,211,240)',
-        'Comissioning': 'rgb(72,49,120)',
-        'Payment Milestone': 'rgb(252,215,87)',
-        'Project Milestone': 'rgb(252,215,87)',
-    }
-
-    fig = px.timeline(df_3, x_start="Start_Date", x_end="End_Date", y="Event", color='Event_Category', color_discrete_map=custom_colors)
-
-    fig.update_yaxes(categoryorder='array', categoryarray=df_3['Event'])
-    fig.update_yaxes(autorange="reversed") # otherwise tasks are listed from the bottom up
-    # Adjust bar height
-    fig.update_traces(marker=dict(line=dict(width=0.5)), selector=dict(type='bar'))
-
-
-    fig.add_trace(go.Scatter(
-        x=df_3[df_3['Event'].isin(proj_milestones_combined)]["Start_Date"],
-        y=df_3[df_3['Event'].isin(proj_milestones_combined)]["Event"],
-        mode='markers',
-        name='Project Milestones',
-        marker=dict(size=10, color='orange', symbol='diamond'), showlegend=True))
-
-    fig.add_trace(go.Scatter(
-        x=df_3[df_3['Event'].isin(paym_milestones_combined)]["Start_Date"],
-        y=df_3[df_3['Event'].isin(paym_milestones_combined)]["Event"],
-        mode='markers',
-        name='Payment Milestones',
-        marker=dict(size=10, color='green', symbol='star'), showlegend=True))
-    
-    fig.update_layout(
-        legend=dict(
-            x=1,
-            y=1,
-            traceorder="reversed",
-            title_font_family="Helvetica",
-            font=dict(
-                family="Helvetica",
-                size=12,
-                color="black"
-            ),
-            bordercolor="Black",
-            borderwidth=2
-        )
-    )
-    for trace in fig.data:
-        if trace.name in proj_milestones_combined or trace.name in paym_milestones_combined or trace.name in ["Project Milestone", "Payment Milestone"]:  # Replace with the trace you want to remove
-            trace.showlegend = False
+        custom_colors = {
+            'Drawing Confirmation': 'rgb(245,225,164)',
+            'Manufacturing': 'rgb(252,215,87)',
+            'Shipment': 'rgb(99,102,106)',
+            'Installation': 'rgb(208,211,240)',
+            'Comissioning': 'rgb(72,49,120)',
+            'Payment Milestone': 'rgb(252,215,87)',
+            'Project Milestone': 'rgb(252,215,87)',
+        }
         
-    # fig.write_image("schedule_plot.png", height = 650, width=1400)
+        # Adjust the size of the Y-axis text 
+        num_tasks = len(df_3) 
+        tick_size = max(14, 30 - num_tasks) # Adjust the formula as needed
 
-    # fig.write_image("plot-schedule.png", width=600, height=320)
+        fig = px.timeline(df_3, x_start="Start_Date", x_end="End_Date", y="Event", color='Event_Category', color_discrete_map=custom_colors)
 
-    def months_diff(start_date, end_date):
-        # Ensure start_date is before end_date
-        if start_date > end_date:
-            start_date, end_date = end_date, start_date
+        fig.update_yaxes(categoryorder='array', categoryarray=df_3['Event'])
+        fig.update_yaxes(autorange="reversed") # otherwise tasks are listed from the bottom up
 
-        # Calculate the difference in years and months
-        year_diff = end_date.year - start_date.year
-        month_diff = end_date.month - start_date.month
-
-        # Total months difference
-        total_months = year_diff * 12 + month_diff
-
-        return total_months
+        fig.add_trace(go.Scatter(
+            x=df_3[df_3['Event'].isin(proj_milestones_combined)]["Start_Date"],
+            y=df_3[df_3['Event'].isin(proj_milestones_combined)]["Event"],
+            mode='markers',
+            name='Project Milestones',
+            marker=dict(size=10, color='orange', symbol='diamond'), 
+            showlegend=True,  
+            ))
+            
+        fig.add_trace(go.Scatter(
+            x=df_3[df_3['Event'].isin(paym_milestones_combined)]["Start_Date"],
+            y=df_3[df_3['Event'].isin(paym_milestones_combined)]["Event"],
+            mode='markers',
+            name='Payment Milestones',
+            marker=dict(size=10, color='green', symbol='star'), showlegend=True))
     
+        for i, row in df_3.iterrows(): 
+            if row['Event'] in paym_milestones_combined or row['Event'] in proj_milestones_combined: 
+                fig.add_annotation( 
+                    x=row['Start_Date'], 
+                    y=row['Event'], 
+                    text= str(row['Start_Date'].date()), 
+                    showarrow=False, 
+                    yshift=0, 
+                    xshift=60,
+                    font=dict(
+                        size = min(18, tick_size)
+                    )
+                    )
+                
+
+
+        fig.update_layout(
+            plot_bgcolor='rgb(255, 255, 255)', # Light grey background 
+            paper_bgcolor='rgb(255, 255, 255)', # Very light grey paper background                       
+
+            xaxis=dict(showgrid=True, # Show gridlines 
+                       gridcolor='rgb(200, 200, 200)', # Gridline color 
+                       gridwidth=1, # Gridline width
+                       zeroline=False, # Remove zero line
+                       tickfont=dict(size=tick_size),
+                       ),
+            yaxis=dict( showgrid=True, # Show gridlines 
+                        gridcolor='rgb(200, 200, 200)', # Gridline color 
+                        gridwidth=0.5, # Gridline width 
+                        zeroline=False, # Remove zero line
+                        tickfont=dict(size=tick_size),
+                        automargin=True,
+                        ),
+
+            legend=dict(
+                x=1,
+                y=1,
+                traceorder="reversed",
+                title_font_family="Helvetica",
+                font=dict(
+                    family="Helvetica",
+                    size=12,
+                    color="black"
+                ),
+                bordercolor="Black",
+                borderwidth=2
+            )
+        )
+
+        
+        for trace in fig.data:
+            if trace.name in proj_milestones_combined or trace.name in paym_milestones_combined or trace.name in ["Project Milestone", "Payment Milestone"]:  # Replace with the trace you want to remove
+                trace.showlegend = False
+
+        return fig
+    
+    fig = create_gantt(df_3, proj_milestones_combined, paym_milestones_combined)
+    fig.write_image("schedule_gantt.png", height = 800, width=1724)
 
     # Months from NTP to COD
     months_ntp_cod = str(months_diff(cod, ntp)) + " months"
@@ -695,11 +732,6 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         durations_list[1] = "Delivery"
         durations_desc[1] = "From Delivery Commencement to Guaranteed Delivery Date"
         
-
-
-
-        # duration_weeks = [0]*len(durations_list)
-
         duration_weeks.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/7))
         duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Guaranteed Delivery Completion Date")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Delivery Commencement")]['Date'].iloc[0]).days)/7))
         duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Installation Completion")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Installation Commencement")]['Date'].iloc[0]).days)/7))
@@ -740,11 +772,4 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     df_floats = table_format(df_floats)
     df_proj_overview = table_format(df_proj_overview)
 
-
-
     return fig, stored_fig_data, cod.date(), proj_schedule_stored, df_milestones, df_milestones_stored, df_critical_durations, df_critical_durations_stored, df_floats, df_proj_overview
-# scheduler(ntp, number_of_PCS, number_of_containers, manufacturing_slot_size_pcs, manufacturing_slot_size_batt, pcs_delay_ntp_fntp, pcs_delay_fntp_po_date, \
-#               pcs_delay_po_date_dw_conf, pcs_dw_conf_duration, pcs_delay_dw_conf_manu, pcs_manu_duration, pcs_delay_manu_shipment, pcs_shipment_duration, \
-#                 pcs_delay_shipment_installation, pcs_installation_duration, batt_delay_ntp_fntp, batt_delay_fntp_po_date, batt_delay_po_date_dw_conf, batt_dw_conf_duration, \
-#                     batt_delay_dw_conf_manu, batt_manu_duration, batt_delay_manu_shipment, batt_shipment_duration, batt_delay_shipment_installation, \
-#                         batt_installation_duration, delay_comm_installation, comm_duration, delay_comm_pa, delay_pa_cod, delay_cod_fa)
