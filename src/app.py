@@ -23,7 +23,6 @@ server = Flask(__name__)
 
 # Keep this out of source code repository - save in a file or a database
 VALID_USERNAME_PASSWORD_PAIRS = {
-    'greek': 'spartans',
     'irish':'whiskey',
     'rocky':'mountains',
     'dim':'sum',
@@ -38,10 +37,11 @@ app = dash.Dash(server=server, use_pages=True, external_stylesheets=["https://cd
                 )
 server = app.server
 
-# auth = dash_auth.BasicAuth(
-#     app,
-#     VALID_USERNAME_PASSWORD_PAIRS
-# )
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
+server.secret_key = 'hello' # Replace with your actual secret key
 
 input_label_style = {'font-size': '0.95em', 'font-weight': 'bolder'}
 

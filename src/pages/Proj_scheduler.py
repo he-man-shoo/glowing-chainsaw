@@ -13,12 +13,12 @@ from gantt_chart_schedule import scheduler
 from proj_schedule_pdf import create_proj_schedule_pdf
 
 
-dash.register_page(__name__, name = "Project Scheduler", order=2)
+dash.register_page(__name__, name = "Project Scheduling Tool", order=2)
 
 # Define the layout of the website
 layout = dbc.Container([
     dbc.Row([
-        dbc.Col(html.H2("Project Scheduler  - Do not use; Dev under Progress", 
+        dbc.Col(html.H2("Project Scheduling Tool - Do not use; Dev under Progress", 
                         className='text-center text-primary-emphasis'),
                         xs=12, sm=12, md=12, lg=6, xl=6)
     ], justify='around', align='center'),
@@ -50,7 +50,7 @@ layout = dbc.Container([
         dbc.Col([html.P("Gantt Chart Schedule Filter", 
                         className='col-form-label col-form-label-sm mt-2'),
                 dcc.Dropdown(
-                        options = ["Full Project Schedule", "PCS Supplier Schedule", "Battery Supplier Schedule", "Customer Schedule"],
+                        options = ["Full Project Schedule", "Customer Schedule", "Battery Supplier Schedule", "PCS Supplier Schedule"],
                         value = "Full Project Schedule",
                         multi=False,
                         id = "ddn_gantt_filter" 
@@ -143,6 +143,21 @@ layout = dbc.Container([
     html.Br(),
     html.Br(),
 
+    dbc.Row([
+        dbc.Col([
+            dbc.Container(
+                 [
+                      html.P(id="df_supplier_assump"),
+                  ]),
+            ], xs=12, sm=12, md=12, lg=4, xl=4),
+        dbc.Col([
+            dbc.Container(
+                 [
+                      html.P(id="df_project_assump"),
+                  ]),
+            ], xs=12, sm=12, md=12, lg=4, xl=4),
+    ], justify='center', align='top'),
+
 ], fluid=True), 
 
 @dash.callback(
@@ -156,6 +171,8 @@ layout = dbc.Container([
     Output("stored_df_critical_durations", "data"),
     Output("df_floats", "children"),
     Output("df_proj_overview", "children"),
+    Output("df_supplier_assump", "children"),
+    Output("df_project_assump", "children"),    
     Output("btn_schedule", "n_clicks"),
     [Input('btn_schedule', 'n_clicks'),
     Input('ntp', 'date'),
@@ -167,9 +184,12 @@ layout = dbc.Container([
 
 def gantt_chart(n_clicks, ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     if n_clicks:
-        fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, df_critical_durations, stored_df_critical_durations, df_floats, df_proj_overview = scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope)
+        fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, \
+            df_critical_durations, stored_df_critical_durations, df_floats, df_proj_overview, \
+                df_supplier_assump, df_project_assump = scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope)
         
-        return fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, df_critical_durations, stored_df_critical_durations, df_floats, df_proj_overview, 0
+        return fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, \
+            df_critical_durations, stored_df_critical_durations, df_floats, df_proj_overview, df_supplier_assump, df_project_assump, 0
     else:
         raise PreventUpdate
 
