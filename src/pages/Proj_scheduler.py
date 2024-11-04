@@ -18,7 +18,7 @@ dash.register_page(__name__, name = "Project Scheduling Tool", order=2)
 # Define the layout of the website
 layout = dbc.Container([
     dbc.Row([
-        dbc.Col(html.H2("Project Scheduling Tool - Do not use; Dev under Progress", 
+        dbc.Col(html.H2("Project Scheduling Tool", 
                         className='text-center text-primary-emphasis'),
                         xs=12, sm=12, md=12, lg=6, xl=6)
     ], justify='around', align='center'),
@@ -106,13 +106,7 @@ layout = dbc.Container([
                   ]),
 
             html.Br(),
-            
-            html.H6("Project Overview", className="mb-4 strong"),
-
-            dbc.Container(
-                 [
-                      html.P(id='df_proj_overview'), 
-                  ]),
+        
             ], xs=12, sm=12, md=12, lg=2, xl=2),
 
     ], justify='center', align='top'),
@@ -158,6 +152,9 @@ layout = dbc.Container([
             ], xs=12, sm=12, md=12, lg=4, xl=4),
     ], justify='center', align='top'),
 
+    html.Br(),
+    html.Br(),
+
 ], fluid=True), 
 
 @dash.callback(
@@ -170,7 +167,6 @@ layout = dbc.Container([
     Output("df_critical_durations", "children"),
     Output("stored_df_critical_durations", "data"),
     Output("df_floats", "children"),
-    Output("df_proj_overview", "children"),
     Output("df_supplier_assump", "children"),
     Output("df_project_assump", "children"),    
     Output("btn_schedule", "n_clicks"),
@@ -185,11 +181,11 @@ layout = dbc.Container([
 def gantt_chart(n_clicks, ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     if n_clicks:
         fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, \
-            df_critical_durations, stored_df_critical_durations, df_floats, df_proj_overview, \
+            df_critical_durations, stored_df_critical_durations, df_floats, \
                 df_supplier_assump, df_project_assump = scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope)
         
         return fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, \
-            df_critical_durations, stored_df_critical_durations, df_floats, df_proj_overview, df_supplier_assump, df_project_assump, 0
+            df_critical_durations, stored_df_critical_durations, df_floats, df_supplier_assump, df_project_assump, 0
     else:
         raise PreventUpdate
 

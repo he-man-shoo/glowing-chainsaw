@@ -445,6 +445,10 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             marker=dict(size=10, color='orange', symbol='diamond'), 
             showlegend=True,  
             ))
+        
+        fig.update_layout(
+            yaxis_title=""  # Set y-axis title to an empty string
+            )
             
         fig.add_trace(go.Scatter(
             x=df_3[df_3['Event'].isin(paym_milestones_combined)]["Start_Date"],
@@ -711,10 +715,10 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     fig.write_image("schedule_gantt.png", height = 800, width=1724)
 
     # Months from NTP to COD
-    months_ntp_cod = str(months_diff(cod, ntp)) + " months"
+    months_ntp_cod = str(months_diff(cod, ntp))
 
     # Months from FAT to COD
-    months_fat_cod = str(months_diff(cod, first_fat)) + " months"
+    months_fat_cod = str(months_diff(cod, first_fat))
 
     proj_schedule_stored = df_3.to_dict()
 
@@ -735,59 +739,72 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Critical Durations Table
     df_critical_durations = pd.DataFrame([])
 
-    durations_list = ['Total Project Duration', 'PCS Supplier Drawing Confirmation, Manufacturing and FAT', 'Battery Supplier Drawing Confirmation, Manufacturing and FAT', 'Total Transportation', 'Installation', 'Commissioning and Testing']
-    durations_desc = ["From " + str(df_3.loc[0, "Event"]) + " to " + str(df_3.loc[len(df_3)-1, "Event"]), 'From PCS Supplier PO Date to FAT', 'From Battery Supplier PO Date to FAT','From First Shipment Leaving the Factory to Last Delivery to site', \
+    durations_list = ['Total Project Duration', 'Project Duration until PA', 'Amount of Calendar Degradation of Batteries until PA', \
+        'From PCS Supplier PO Date to FAT', 'From Battery Supplier PO Date to FAT', 'Total Transportation', 'Installation', 'Commissioning and Testing']
+    durations_desc = ["From " + str(df_3.loc[0, "Event"]) + " to " + str(df_3.loc[len(df_3)-1, "Event"]), \
+                      'From Notice to Proceed to PA', 'From FAT to PA', 'PCS Supplier Drawing Confirmation, Manufacturing and FAT', \
+                      'Battery Supplier Drawing Confirmation, Manufacturing and FAT','From First Shipment Leaving the Factory to Last Delivery to site', \
                       'From Installation Commencement to Installation Completion', 'From Installation Completion to PA']
-    duration_weeks = []
+    duration_months = []
     if "Supplier" in scope:
         durations_list.remove("Installation")
         durations_list.remove("Commissioning and Testing")
+        durations_list.remove("Project Duration until PA")
+        durations_list.remove("Amount of Calendar Degradation of Batteries until PA")
 
         durations_desc.remove('From Installation Commencement to Installation Completion')
         durations_desc.remove('From Installation Completion to PA')
+        durations_desc.remove('From Notice to Proceed to PA')        
+        durations_desc.remove('From FAT to PA')
 
         durations_desc[0] = "From PO Date" + " to " + str(df_3.loc[len(df_3)-1, "Event"])
 
-        duration_weeks.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("First FAT")]['Date'] - df_milestones.loc[0, "Date"]).iloc[0].days)/7))
+        duration_months.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("First FAT")]['Date'] - df_milestones.loc[0, "Date"]).iloc[0].days)/30.5))
 
         if "Battery" in scope:
-            durations_list.remove("PCS Supplier Drawing Confirmation, Manufacturing and FAT")
-            durations_desc.remove('From PCS Supplier PO Date to FAT')
+            durations_desc.remove("PCS Supplier Drawing Confirmation, Manufacturing and FAT")
+            durations_list.remove('From PCS Supplier PO Date to FAT')
 
-            duration_weeks.append(math.ceil(((df_3.loc[df_3["Event"].str.contains("Final Delivery of all DC Block Equipment")]['End_Date'].iloc[0] - df_3.loc[df_3["Event"].str.contains("Shipment Batch #1")]['Start_Date'].iloc[0]).days)/7))
+            duration_months.append(math.ceil(((df_3.loc[df_3["Event"].str.contains("Final Delivery of all DC Block Equipment")]['End_Date'].iloc[0] - df_3.loc[df_3["Event"].str.contains("Shipment Batch #1")]['Start_Date'].iloc[0]).days)/30.5))
         if "PCS" in scope:
-            durations_list.remove("Battery Supplier Drawing Confirmation, Manufacturing and FAT")
-            durations_desc.remove('From Battery Supplier PO Date to FAT')
+            durations_desc.remove("Battery Supplier Drawing Confirmation, Manufacturing and FAT")
+            durations_list.remove('From Battery Supplier PO Date to FAT')
 
-            duration_weeks.append(math.ceil(((df_3.loc[df_3["Event"].str.contains("Guaranteed Delivery")]['End_Date'].iloc[0] - df_3.loc[df_3["Event"].str.contains("Shipment Batch #1")]['Start_Date'].iloc[0]).days)/7))
+            duration_months.append(math.ceil(((df_3.loc[df_3["Event"].str.contains("Guaranteed Delivery")]['End_Date'].iloc[0] - df_3.loc[df_3["Event"].str.contains("Shipment Batch #1")]['Start_Date'].iloc[0]).days)/30.5))
 
     elif "Customer" in scope:
-        durations_list.remove('PCS Supplier Drawing Confirmation, Manufacturing and FAT')
-        durations_list.remove('Battery Supplier Drawing Confirmation, Manufacturing and FAT')
-
-        durations_desc.remove('From PCS Supplier PO Date to FAT')
-        durations_desc.remove('From Battery Supplier PO Date to FAT')
+        durations_desc.remove('PCS Supplier Drawing Confirmation, Manufacturing and FAT')
+        durations_desc.remove('Battery Supplier Drawing Confirmation, Manufacturing and FAT')
+        durations_desc.remove('From Notice to Proceed to PA')        
+        durations_desc.remove('From FAT to PA')
         
+        durations_list.remove('From PCS Supplier PO Date to FAT')
+        durations_list.remove('From Battery Supplier PO Date to FAT')
+        durations_list.remove("Project Duration until PA")
+        durations_list.remove('Amount of Calendar Degradation of Batteries until PA')
+
         durations_list[1] = "Delivery"
         durations_desc[1] = "From Delivery Commencement to Guaranteed Delivery Date"
         
-        duration_weeks.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Guaranteed Delivery Completion Date")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Delivery Commencement")]['Date'].iloc[0]).days)/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Installation Completion")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Installation Commencement")]['Date'].iloc[0]).days)/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Provisional Acceptance")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Installation Completion")]['Date'].iloc[0]).days)/7))
-    
+        duration_months.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Guaranteed Delivery Completion Date")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Delivery Commencement")]['Date'].iloc[0]).days)/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Installation Completion")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Installation Commencement")]['Date'].iloc[0]).days)/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Provisional Acceptance")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Installation Completion")]['Date'].iloc[0]).days)/30.5))
+
     else:
-        duration_weeks.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "PCS Supplier | First FAT"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "PCS Supplier | PO Date"]['Date'].iloc[0]).days)/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "Battery Supplier | First FAT"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "Battery Supplier | PO Date"]['Date'].iloc[0]).days)/7))
-        duration_weeks.append(math.ceil(((df_3.loc[df_3["Event"] == "Guaranteed Delivery Completion Date"]['Start_Date'].iloc[0] - df_3.loc[df_3["Event"] == "PCS Supplier | Shipment Batch #1"]['Start_Date'].iloc[0]).days)/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "Installation Completion"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "Installation Commencement"]['Date'].iloc[0]).days)/7))
-        duration_weeks.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "Guaranteed Provisional Acceptance"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "Installation Completion"]['Date'].iloc[0]).days)/7))
+        duration_months.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/30.5))
+        duration_months.append(months_ntp_cod)
+        duration_months.append(months_fat_cod)
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "PCS Supplier | First FAT"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "PCS Supplier | PO Date"]['Date'].iloc[0]).days)/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "Battery Supplier | First FAT"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "Battery Supplier | PO Date"]['Date'].iloc[0]).days)/30.5))
+        duration_months.append(math.ceil(((df_3.loc[df_3["Event"] == "Guaranteed Delivery Completion Date"]['Start_Date'].iloc[0] - df_3.loc[df_3["Event"] == "PCS Supplier | Shipment Batch #1"]['Start_Date'].iloc[0]).days)/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "Installation Completion"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "Installation Commencement"]['Date'].iloc[0]).days)/30.5))
+        duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"] == "Guaranteed Provisional Acceptance"]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"] == "Installation Completion"]['Date'].iloc[0]).days)/30.5))
 
 
     df_critical_durations['Critical Durations'] = durations_list
-    df_critical_durations['Weeks'] = duration_weeks
+    df_critical_durations['Months'] = duration_months
     df_critical_durations['Description'] = durations_desc
 
     # Float Table 
@@ -796,12 +813,6 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     df_floats['Float Description'] = ['Float for Commissioning and Testing', 'Float for Guaranteed Delivery Date', 'Float for PCS Supplier PO', 'Total Project Schedule Float']
     df_floats['Float Duration (weeks)'] = [float_comm_duration, float_ship_duration, float_po_date, total_schedule_float]
 
-    # Project Overview Table 
-    df_proj_overview = pd.DataFrame([])
-
-    df_proj_overview['Event Time Window'] = ['Months from NTP to PA', 'Months from Battery First FAT to PA']
-    df_proj_overview['Duration'] = [months_ntp_cod, months_fat_cod]
-    
     stored_fig_data = fig
     df_milestones_stored = df_milestones.to_dict()
     df_critical_durations_stored = df_critical_durations.to_dict()
@@ -810,7 +821,6 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     df_milestones = table_format(df_milestones)
     df_critical_durations = table_format(df_critical_durations)
     df_floats = table_format(df_floats)
-    df_proj_overview = table_format(df_proj_overview)
 
 
     # Assumptions Table
@@ -836,7 +846,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                                " •	Site is ready to accept delivery 1 week before first batch of equipment is delivered.", \
                                " •	First batch of PCSs is delivered 4 weeks before first batch of batteries.", \
                                " •	Commissioning is performed by Feeder (this is not visible in customer schedule).", \
-                               " •	Backfeed is available 1 week before first feeder installation is complete.", \
+                               " •	Backfeed is available 1 week before first feeder installation is complete", \
                                " •	Earlier commissioning start is when first feeder is installed.", \
                                " •	Minimum commissioning time per feeder 90 days. (8 PCS & 32 Containers).", \
                                " •	Total commissioning time will scale as defined in the cost sheet. (Maximum project size 2000 MWh requires 139 days)", \
@@ -849,4 +859,4 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     df_project_assump = table_format(df_project_assump)
 
     return fig, stored_fig_data, cod.date(), proj_schedule_stored, df_milestones, df_milestones_stored, df_critical_durations, \
-        df_critical_durations_stored, df_floats, df_proj_overview, df_supplier_assump, df_project_assump
+        df_critical_durations_stored, df_floats, df_supplier_assump, df_project_assump
