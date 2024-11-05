@@ -32,9 +32,14 @@ layout = dbc.Container([
                 dcc.DatePickerSingle(id="ntp", date=date(2024, 10, 10), className="form-control-sm")
                         ], xs=12, sm=12, md=6, lg=2, xl=2),
 
-        dbc.Col([html.P("Commericial Operation Date (COD)", 
+        dbc.Col([html.P("Intended COD", 
                         className='col-form-label col-form-label-sm mt-2'),
-                dcc.DatePickerSingle(id="cod", date=date(2025, 12, 1), className="form-control-sm")
+                dcc.DatePickerSingle(id="intended_cod", date=date(2025, 12, 1), className="form-control-sm")
+                        ], xs=12, sm=12, md=6, lg=2, xl=2),
+        
+        dbc.Col([html.P("Actual COD", 
+                        className='col-form-label col-form-label-sm mt-2'),
+                dcc.DatePickerSingle(id="cod", date=date(2025, 12, 1), disabled=True, className="form-control-sm")
                         ], xs=12, sm=12, md=6, lg=2, xl=2),
 
         dbc.Col([html.P("Number of PCSs", 
@@ -56,7 +61,7 @@ layout = dbc.Container([
                         id = "ddn_gantt_filter" 
                         
                 )
-                ], xs=12, sm=12, md=6, lg=3, xl=3), 
+                ], xs=12, sm=12, md=6, lg=2, xl=2), 
 
 
     ], justify='around', align='center'),
@@ -172,7 +177,7 @@ layout = dbc.Container([
     Output("btn_schedule", "n_clicks"),
     [Input('btn_schedule', 'n_clicks'),
     Input('ntp', 'date'),
-    Input('cod', 'date'),
+    Input('intended_cod', 'date'),
     Input('number_of_PCS', 'value'),
     Input('number_of_containers', 'value'),
     Input('ddn_gantt_filter', 'value'),]

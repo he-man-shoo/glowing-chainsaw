@@ -530,9 +530,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     initial_batt_delay_shipment_installation = 1 # There is minimum 1 week delay between Shipment Delivery and Installation 
     batt_delay_shipment_installation = initial_batt_delay_shipment_installation
     
-    comm_duration = 90 # 90 days per Feeder
-
-    comm_duration_last_feeder = 120 #Comm Duration for last feeder is dependent on Project Size 
+    comm_duration = 90 # Minimum Commissioning time per Feeder - 90 days per Feeder
 
     df_comm_durations = pd.DataFrame([])
     df_comm_durations['Number of Enclosures'] = [25, 50, 100, 125, 150, 175, 200]
@@ -612,18 +610,18 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
 
         df_3, cod, first_fat, pcs_delivery_to_site, batt_delivery_to_site, paym_milestones_combined, proj_milestones_combined = create_schedule_table(pcs_delay_fntp_po_date, batt_delay_fntp_po_date, batt_delay_shipment_installation, comm_duration)
 
-    # If Intended COD is LATER than Calculated COD
+
+    # If Intended COD is LATER than Calculated COD more than a week
 
     if intended_cod >= cod + pd.to_timedelta(7, unit="d"):
         total_schedule_float = math.floor((intended_cod - cod).days/7)
         remaining_schedule_float = total_schedule_float
 
         # Delay the PA by max 4 weeks
-        
         if remaining_schedule_float > 0:
             float_comm_duration = min(4, remaining_schedule_float)
             comm_duration = comm_duration + float_comm_duration*7
-            comm_duration_last_feeder = comm_duration_last_feeder + + float_comm_duration*7
+            comm_duration_last_feeder = comm_duration_last_feeder + float_comm_duration*7
         remaining_schedule_float = remaining_schedule_float - min(4, remaining_schedule_float)
 
         # Delay the Delay Shipment and Installation by max 4 weeks
@@ -638,6 +636,15 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             batt_delay_fntp_po_date = batt_delay_fntp_po_date + pcs_delay_fntp_po_date
 
         df_3, cod, first_fat, pcs_delivery_to_site, batt_delivery_to_site, paym_milestones_combined, proj_milestones_combined = create_schedule_table(pcs_delay_fntp_po_date, batt_delay_fntp_po_date, batt_delay_shipment_installation, comm_duration)
+
+    # If Intended COD is LATER than Calculated COD less than a week
+    if intended_cod > cod:
+        delay_comm_pa = delay_comm_pa + (intended_cod - cod).days
+        
+        df_3, cod, first_fat, pcs_delivery_to_site, batt_delivery_to_site, paym_milestones_combined, proj_milestones_combined = create_schedule_table(pcs_delay_fntp_po_date, batt_delay_fntp_po_date, batt_delay_shipment_installation, comm_duration)
+
+    # reset Delay b/w PA and COD to 14
+    delay_comm_pa = 14
 
     # Label Installation Commencement and Completion as Project Milestones
     i = df_3.loc[df_3['Event'] == 'Installation Commencement'].iloc[0].name
@@ -739,12 +746,22 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Critical Durations Table
     df_critical_durations = pd.DataFrame([])
 
-    durations_list = ['Total Project Duration', 'Project Duration until PA', 'Amount of Calendar Degradation of Batteries until PA', \
-        'From PCS Supplier PO Date to FAT', 'From Battery Supplier PO Date to FAT', 'Total Transportation', 'Installation', 'Commissioning and Testing']
+    durations_list = ['Total Project Duration', \
+                      'Project Duration until PA', \
+                      'Amount of Calendar Degradation of Batteries until PA', \
+                      'From PCS Supplier PO Date to FAT', \
+                      'From Battery Supplier PO Date to FAT', \
+                      'Total Transportation', \
+                      'Installation', \
+                      'Commissioning and Testing']
     durations_desc = ["From " + str(df_3.loc[0, "Event"]) + " to " + str(df_3.loc[len(df_3)-1, "Event"]), \
-                      'From Notice to Proceed to PA', 'From FAT to PA', 'PCS Supplier Drawing Confirmation, Manufacturing and FAT', \
-                      'Battery Supplier Drawing Confirmation, Manufacturing and FAT','From First Shipment Leaving the Factory to Last Delivery to site', \
-                      'From Installation Commencement to Installation Completion', 'From Installation Completion to PA']
+                      'From Notice to Proceed to PA', \
+                      'From FAT to PA', \
+                      'PCS Supplier Drawing Confirmation, Manufacturing and FAT', \
+                      'Battery Supplier Drawing Confirmation, Manufacturing and FAT',\
+                      'From First Shipment Leaving the Factory to Last Delivery to site', \
+                      'From Installation Commencement to Installation Completion', \
+                      'From Installation Completion to PA']
     duration_months = []
     if "Supplier" in scope:
         durations_list.remove("Installation")
@@ -810,8 +827,13 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Float Table 
     df_floats = pd.DataFrame([])
 
-    df_floats['Float Description'] = ['Float for Commissioning and Testing', 'Float for Guaranteed Delivery Date', 'Float for PCS Supplier PO', 'Total Project Schedule Float']
-    df_floats['Float Duration (weeks)'] = [float_comm_duration, float_ship_duration, float_po_date, total_schedule_float]
+    df_floats['Float Description'] = ['Float for Commissioning and Testing (weeks)', 'Float for Guaranteed Delivery Date (weeks)', 'Float for PCS Supplier PO (weeks)', 'Total Project Schedule Float (weeks)']
+    df_floats['Duration'] = [float_comm_duration, float_ship_duration, float_po_date, total_schedule_float]
+
+    if intended_cod < cod:
+        i = len(df_floats)
+        df_floats.loc[i, 'Float Description'] = 'Delta between originally Intended COD and Actual COD (days)'
+        df_floats.loc[i, 'Duration'] = (intended_cod - cod).days
 
     stored_fig_data = fig
     df_milestones_stored = df_milestones.to_dict()
@@ -850,7 +872,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                                " •	Earlier commissioning start is when first feeder is installed.", \
                                " •	Minimum commissioning time per feeder 90 days. (8 PCS & 32 Containers).", \
                                " •	Total commissioning time will scale as defined in the cost sheet. (Maximum project size 2000 MWh requires 139 days)", \
-                               " •	Provisional Acceptance is 14 days after commissioning completion.", \
+                               " •	Provisional Acceptance is atleast 14 days after commissioning completion. At max it is 20 days after commissioning completion", \
                                " •	Final Acceptance is 60 days after Provisional Acceptance.", \
     ]
 
