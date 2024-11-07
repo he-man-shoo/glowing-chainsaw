@@ -43,7 +43,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
             total_augmentation_energy = total_augmentation_energy + float(i.replace(',', ''))
 
 
-    n_s_block_access_road = 10 # Access Road after "n" number of blocks
+    n_s_block_access_road = 4 # Access Road after "n" number of blocks
     
     container_length = 20*12
     container_width = 8*12
@@ -153,17 +153,16 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         n_s_block_limit = n_s_block_limit_array[i]
 
         if block_type == 1:
-            inner_block_length = (e_w_block_limit*2-math.floor(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2-math.floor(e_w_block_limit/2)-1)*pcs_clearance_short_end + access_road_width/4
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2-math.floor(e_w_block_limit/2)-1)*pcs_clearance_short_end + access_road_width/4
         
         if block_type == 2:
-            inner_block_length = (e_w_block_limit*2)*(container_length) + (e_w_block_limit + (e_w_block_limit//2) + (e_w_block_limit%2 - 1))*pcs_clearance_short_end + (e_w_block_limit//2)*container_clearance_minimum + access_road_width/4
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (e_w_block_limit)*(container_length) + (e_w_block_limit + (e_w_block_limit//2) + (e_w_block_limit%2 - 1))*pcs_clearance_short_end + (e_w_block_limit//2)*container_clearance_minimum + access_road_width/4
         
         if block_type == 3:
-            inner_block_length = (e_w_block_limit*2 + math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
-            
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (2*e_w_block_limit - math.floor(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
+    
         if block_type == 4:
-            inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2)*pcs_clearance_short_end + (e_w_block_limit-1)*container_clearance_minimum + access_road_width/4
-        
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (2*e_w_block_limit)*(container_length) + (e_w_block_limit*2)*pcs_clearance_short_end + (e_w_block_limit-1)*container_clearance_minimum + access_road_width/4
         outer_block_length = inner_block_length + 2*access_road_width
 
         inner_block_width_partial = (n_s_block_limit % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_limit % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
@@ -402,16 +401,16 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         y = y - access_road_width/8
 
         if block_type == 1:
-            inner_block_length = (e_w_block_limit*2-math.floor(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2-math.floor(e_w_block_limit/2)-1)*pcs_clearance_short_end + access_road_width/4
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2-math.floor(e_w_block_limit/2)-1)*pcs_clearance_short_end + access_road_width/4
         
         if block_type == 2:
-            inner_block_length = (e_w_block_limit*2)*(container_length) + (e_w_block_limit + (e_w_block_limit//2) + (e_w_block_limit%2 - 1))*pcs_clearance_short_end + (e_w_block_limit//2)*container_clearance_minimum + access_road_width/4
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (e_w_block_limit)*(container_length) + (e_w_block_limit + (e_w_block_limit//2) + (e_w_block_limit%2 - 1))*pcs_clearance_short_end + (e_w_block_limit//2)*container_clearance_minimum + access_road_width/4
         
         if block_type == 3:
-            inner_block_length = (e_w_block_limit*2 + math.ceil(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (2*e_w_block_limit - math.floor(e_w_block_limit/2))*(container_length) + (e_w_block_limit*2 - 1)*pcs_clearance_short_end + math.ceil(e_w_block_limit/2)*container_clearance_minimum + access_road_width/4
             
         if block_type == 4:
-            inner_block_length = (e_w_block_limit + 2*e_w_block_limit)*(container_length) + (e_w_block_limit*2)*pcs_clearance_short_end + (e_w_block_limit - 1)*container_clearance_minimum + access_road_width/4
+            inner_block_length = (e_w_block_limit)*(pcs_length) + (2*e_w_block_limit)*(container_length) + (e_w_block_limit*2)*pcs_clearance_short_end + (e_w_block_limit-1)*container_clearance_minimum + access_road_width/4
         
         if n_s_block_count % n_s_block_access_road != 0 :
             inner_block_width = (n_s_block_count % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_count % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
