@@ -32,12 +32,12 @@ layout = dbc.Container([
                 dcc.DatePickerSingle(id="ntp", date=date(2024, 10, 10), className="form-control-sm")
                         ], xs=12, sm=12, md=6, lg=2, xl=2),
 
-        dbc.Col([html.P("Intended COD", 
+        dbc.Col([html.P("Requested COD", 
                         className='col-form-label col-form-label-sm mt-2'),
                 dcc.DatePickerSingle(id="intended_cod", date=date(2025, 12, 1), className="form-control-sm")
                         ], xs=12, sm=12, md=6, lg=2, xl=2),
         
-        dbc.Col([html.P("Actual COD", 
+        dbc.Col([html.P("Calculated COD", 
                         className='col-form-label col-form-label-sm mt-2'),
                 dcc.DatePickerSingle(id="cod", date=date(2025, 12, 1), disabled=True, className="form-control-sm")
                         ], xs=12, sm=12, md=6, lg=2, xl=2),
@@ -127,8 +127,8 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.A([
-                html.Button('Step 1 - Generate Project Schedule PDF',  id='generate_sch_pdf', style={'width':'300px'},className="btn btn-primary mt-4"),
-                dbc.Spinner(html.A('Step 2 - Download Project Schedule PDF', id='download_sch_pdf', href='',  style={'width':'300px'}, className="btn bg-warning mt-4")),
+                html.Button('Step 1 - Generate Project Schedule PDF',  id='generate_sch_pdf', style={'width':'300px'}, className="btn btn-primary mt-4", disabled=False),
+                dbc.Spinner(html.A('Step 2 - Download Project Schedule PDF', id='download_sch_pdf', href='',  style={'width':'300px'}, className="btn bg-warning mt-4", disable_n_clicks=False)),
                     ]),
         ], xs=12, sm=12, md=12, lg=4, xl=4), 
 
@@ -217,6 +217,24 @@ def update_schedule_pdf(n_clicks, stored_fig, stored_df, stored_df_milestones, s
         proj_sch_pdf = ''
 
     return proj_sch_pdf, n_clicks
+
+@dash.callback(
+Output('download_sch_pdf', 'disable_n_clicks'),
+Output('download_sch_pdf', 'style'),
+Output('generate_sch_pdf', 'disabled'),
+ [
+  Input('ddn_gantt_filter', 'value'),
+ ]
+)
+def update_button(ddn_gantt_filter):
+    if ddn_gantt_filter == "Full Project Schedule":
+        style = {'width':'300px', 'cursor':' not-allowed', 'pointer-events': 'none'}
+        return True, style, True
+    else:
+        style = {'width':'300px'}
+        return False, style, False
+
+
 
 @dash.callback(
     Output("download_schedule_xlsx", "data"),

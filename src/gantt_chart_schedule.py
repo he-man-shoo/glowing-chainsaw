@@ -27,7 +27,12 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                                                                 {
                                                                 'if': {'row_index': 'odd'},
                                                                 'backgroundColor': 'rgb(220, 207, 235)',
-                                                                },                                                                                                                              
+                                                                },  
+                                                                
+                                                                {
+                                                                'if': {'column_id': ['Payment Milestone', 'Months', 'Duration (weeks)']},
+                                                                'textAlign': 'center',
+                                                                },                                                                                                                               
                                                             ],
 
                                         style_header={
@@ -167,8 +172,8 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         j = 0
 
         df_2 = pd.DataFrame([])
-        # 'SLOC Received by Prevalon', 'SLOC Received by the Buyer'
-        df_2['Event'] = 'PO Date', 'SLOC Received by Prevalon', 'SLOC Received by the Buyer','Drawing Confirmation', 'Drawing Confirmation Date'
+        # 'Financial Security Received by Prevalon', 'Financial Security Received by the Buyer'
+        df_2['Event'] = 'PO Date', 'Financial Security Received by Prevalon', 'Financial Security Received by the Buyer', 'Drawing Confirmation Date'
 
         for i in range(number_manu_slots_batt):
             df_2.loc[len(df_2) + 1, 'Event'] = "Manufacturing Batch #" + str(i + 1)
@@ -237,17 +242,15 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
 
 
         sloc_prevalon = po_date + pd.to_timedelta(po_sloc_prevalon, unit="d")
-        df_2.loc[df_2["Event"] == "SLOC Received by Prevalon", 'Start_Date'] = sloc_prevalon
-        df_2.loc[df_2["Event"] == "SLOC Received by Prevalon", 'End_Date'] = sloc_prevalon
+        df_2.loc[df_2["Event"] == "Financial Security Received by Prevalon", 'Start_Date'] = sloc_prevalon
+        df_2.loc[df_2["Event"] == "Financial Security Received by Prevalon", 'End_Date'] = sloc_prevalon
 
         sloc_buyer = po_date + pd.to_timedelta(po_sloc_buyer, unit="d")
-        df_2.loc[df_2["Event"] == "SLOC Received by the Buyer", 'Start_Date'] = sloc_buyer
-        df_2.loc[df_2["Event"] == "SLOC Received by the Buyer", 'End_Date'] = sloc_buyer
+        df_2.loc[df_2["Event"] == "Financial Security Received by the Buyer", 'Start_Date'] = sloc_buyer
+        df_2.loc[df_2["Event"] == "Financial Security Received by the Buyer", 'End_Date'] = sloc_buyer
 
         dw_conf_start = po_date + pd.to_timedelta(batt_delay_po_date_dw_conf, unit="w")
         dw_conf_end = dw_conf_start + pd.to_timedelta(batt_dw_conf_duration, unit="d")
-        df_2.loc[df_2["Event"] == "Drawing Confirmation", 'Start_Date'] = dw_conf_start
-        df_2.loc[df_2["Event"] == "Drawing Confirmation", 'End_Date'] = dw_conf_end
 
         df_2.loc[df_2["Event"] == "Drawing Confirmation Date", 'Start_Date'] = dw_conf_end
         df_2.loc[df_2["Event"] == "Drawing Confirmation Date", 'End_Date'] = dw_conf_end
@@ -262,16 +265,16 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             df_2.loc[df_2["Event"] == "Manufacturing Batch #" + str(i+1), 'End_Date'] = manufacturing_end
 
             if i == 0:
-                df_2.loc[df_2["Event"] == "First FAT", 'Start_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="w")
-                df_2.loc[df_2["Event"] == "First FAT", 'End_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="w")
+                df_2.loc[df_2["Event"] == "First FAT", 'Start_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="d")
+                df_2.loc[df_2["Event"] == "First FAT", 'End_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="d")
 
                 first_fat = manufacturing_end
 
             if i == number_manu_slots_batt -1:
-                df_2.loc[df_2["Event"] == "Final FAT", 'Start_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="w")
-                df_2.loc[df_2["Event"] == "Final FAT", 'End_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="w")
+                df_2.loc[df_2["Event"] == "Final FAT", 'Start_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="d")
+                df_2.loc[df_2["Event"] == "Final FAT", 'End_Date'] = manufacturing_end + pd.to_timedelta(batt_delay_manu_fat, unit="d")
 
-            shipment_start = manufacturing_end + pd.to_timedelta(batt_delay_manu_shipment, unit="w")
+            shipment_start = manufacturing_end + pd.to_timedelta(batt_delay_manu_shipment, unit="d")
 
             shipment_end = shipment_start + pd.to_timedelta(batt_shipment_duration, unit="w")
             df_2.loc[df_2["Event"] == "Shipment Batch #" + str(i+1), 'Start_Date'] = shipment_start
@@ -362,7 +365,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         df_2.loc[df_2["Event"] == "Final Acceptance", 'End_Date'] = fa
 
         proj_milestones = ['Backfeed Available', 'Commercial Operation Date', 'Installation Completion', 'Best Case Scenario Provisional Acceptance']
-        paym_milestones = ['PO Date', 'Drawing Confirmation Date', 'First FAT', 'First BESS loaded at Port of Export', 'Final FAT', 'SLOC Received by Prevalon', 'SLOC Received by the Buyer', 'Final Delivery of all DC Block Equipment', 'Guaranteed Delivery Completion Date', 'Guaranteed Provisional Acceptance', 'Final Acceptance']
+        paym_milestones = ['PO Date', 'Drawing Confirmation Date', 'First FAT', 'First BESS loaded at Port of Export', 'Final FAT', 'Financial Security Received by Prevalon', 'Financial Security Received by the Buyer', 'Final Delivery of all DC Block Equipment', 'Guaranteed Delivery Completion Date', 'Guaranteed Provisional Acceptance', 'Final Acceptance']
 
         list = ['Acceptance', 'Commercial', 'Backfeed', 'Ready', 'Completion']
 
@@ -396,9 +399,11 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
 
         df_3 = pd.concat([new_row, df_3], ignore_index=True)
 
+        # print(df_3)
+
         paym_milestones_combined.append('NTP')
 
-        list = ['Drawing Confirmation', 'Manufacturing', 'Shipment', 'Installation', 'Comissioning']
+        list = ['Manufacturing', 'Shipment', 'Installation', 'Comissioning']
 
         df_3['Event_Category'] = df_3['Event'].apply(lambda x: [event for event in list if event in x])
         
@@ -412,14 +417,13 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             else:
                 df_3.loc[i, 'Event_Category'] = df_3.loc[i, 'Event_Category'][0]
 
-        # print(df_3)
+        
 
         return df_3, cod, first_fat, pcs_delivery_to_site, batt_delivery_to_site, paym_milestones_combined, proj_milestones_combined
 
     def create_gantt(df_3, proj_milestones_combined, paym_milestones_combined):
 
         custom_colors = {
-            'Drawing Confirmation': 'rgb(245,225,164)',
             'Manufacturing': 'rgb(252,215,87)',
             'Shipment': 'rgb(99,102,106)',
             'Installation': 'rgb(208,211,240)',
@@ -556,9 +560,9 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     pcs_installation_duration = 4 #weeks per 20 PCSs
 
     batt_delay_po_date_dw_conf = 0
-    batt_delay_po_date_manu = 90 #days (manufacturing starts 90 days after PO)
+    batt_delay_po_date_manu = 90 + 10 #days (manufacturing starts 90 days after PO and First Batch's manufacturing is delayed by 10 days)
     batt_dw_conf_duration = 45 #days
-    batt_delay_manu_shipment = 0
+    batt_delay_manu_shipment = 10 # 10 days are required to perform FAT and start shipping post Manufacturing
     batt_manu_duration = 2 # weeks
     batt_installation_duration = 4 #weeks per 20 Enclosures
 
@@ -580,12 +584,12 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
 
     containers_per_feeder = math.ceil(number_of_containers/number_feeders)
 
-    po_sloc_prevalon = 45 #days
-    po_sloc_buyer = 60 #days
+    po_sloc_prevalon = 10 #days
+    po_sloc_buyer = 45 #days
     
     batt_delay_ship_export = 1
 
-    batt_delay_manu_fat = 0 #weeks
+    batt_delay_manu_fat = 10 #days
 
 
     # PCS Supplier
@@ -659,7 +663,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                      'Site Ready to Accept Delivery', 'Delivery Commencement', 'Installation Commencement', 'Guaranteed Delivery Completion Date', 'Installation Completion', \
                         'Guaranteed Provisional Acceptance', 'Commercial Operation Date', 'Final Acceptance', 'Backfeed Available', 'Installation', 'Comissioning Feeder #' + str(number_feeders)]
     
-    batt_mile_list = ['Battery Supplier | PO Date', 'Battery Supplier | Manufacturing', 'Battery Supplier | SLOC Received by Prevalon', 'Battery Supplier | SLOC Received by the Buyer', 'Battery Supplier | Drawing Confirmation Date', 'Battery Supplier | First FAT', \
+    batt_mile_list = ['Battery Supplier | PO Date', 'Battery Supplier | Manufacturing', 'Battery Supplier | Financial Security Received by Prevalon', 'Battery Supplier | Financial Security Received by the Buyer', 'Battery Supplier | Drawing Confirmation Date', 'Battery Supplier | First FAT', \
                      'Battery Supplier | First BESS loaded at Port of Export', 'Battery Supplier | Shipment', 'Battery Supplier | Final Delivery of all DC Block Equipment', \
                         'Comissioning Feeder #' + str(number_feeders), 'Guaranteed Provisional Acceptance', 'Final Acceptance']
     
@@ -740,6 +744,8 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         if (df_3.loc[i, 'Event_Category'] == 'Payment Milestone') or (df_3.loc[i, 'Event_Category'] == 'Project Milestone'):
             df_milestones.loc[i, 'Event'] =  df_3.loc[i, 'Event']
             df_milestones.loc[i, 'Date'] = df_3.loc[i, 'Start_Date'].date()
+            if df_3.loc[i, 'Event_Category'] == 'Payment Milestone':
+                df_milestones.loc[i, 'Payment Milestone'] = "Yes"
     
     df_milestones.reset_index(drop=True, inplace=True)
 
@@ -827,13 +833,13 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Float Table 
     df_floats = pd.DataFrame([])
 
-    df_floats['Float Description'] = ['Float for Commissioning and Testing (weeks)', 'Float for Guaranteed Delivery Date (weeks)', 'Float for PCS Supplier PO (weeks)', 'Total Project Schedule Float (weeks)']
-    df_floats['Duration'] = [float_comm_duration, float_ship_duration, float_po_date, total_schedule_float]
+    df_floats['Float Description'] = ['Float for Commissioning and Testing', 'Float for Guaranteed Delivery Date', 'Float for PCS Supplier PO', 'Total Project Schedule Float']
+    df_floats['Duration (weeks)'] = [float_comm_duration, float_ship_duration, float_po_date, total_schedule_float]
 
     if intended_cod < cod:
         i = len(df_floats)
-        df_floats.loc[i, 'Float Description'] = 'Delta between originally Intended COD and Actual COD (days)'
-        df_floats.loc[i, 'Duration'] = (intended_cod - cod).days
+        df_floats.loc[i, 'Float Description'] = 'Number of weeks NTP is required to be moved earlier by'
+        df_floats.loc[i, 'Duration (weeks)'] = math.ceil((cod - intended_cod).days/7)
 
     stored_fig_data = fig
     df_milestones_stored = df_milestones.to_dict()
@@ -855,11 +861,13 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                                " •	PCS time from P.O. to FAT first unit = 24 Months", \
                                " •	PCS shipment rate = 20 units per week", \
                                " •	PCS transportation time ex-works to site = 8 weeks", \
-                               " •	Battery Supplier time from P.O. to SLOC received by Prevalon = 45 Days", \
-                               " •	Battery Supplier time from P.O. to SLOC received by Buyer = 60 Days", \
+                               " •	Battery Supplier time from P.O. to Financial Security received by Prevalon = 45 Days", \
+                               " •	Battery Supplier time from P.O. to Financial Security received by Buyer = 60 Days", \
                                " •	Battery Supplier time from P.O. to Drawing Confirmation = 45 Days", \
                                " •	Battery Supplier time from P.O. to manufacturing start = 90 Days", \
                                " •	Battery Supplier manufacturing rate = 20 Containers per 2 weeks", \
+                               " •	FAT is performed 10 days after end of each Manufacturing Batch.", \
+                               " •	Batteries are shipped in batches after FAT.", \
                                " •	Battery Supplier shipping Rate = 20 Containers per 2 weeks", \
                                " •	Battery Supplier transportation time ex-works to site = 8 weeks", \
                                ]

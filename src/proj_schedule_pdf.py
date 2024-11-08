@@ -175,6 +175,14 @@ def create_proj_schedule_pdf(stored_fig_data, proj_schedule_stored, df_milestone
         # Set BOX for columns
         for i in range(len(table[0])):
             table_style.append(("BOX", (i, 0), (i, -1), 0.1, colors.black))  # Light cyan background color for odd rows
+
+        list = ["Payment Milestone", 'Months']
+
+        for j in list:
+            if j in table[0]:
+                i = table[0].index(j)
+                table_style.append(('ALIGN', (i, 0), (i, -1), 'CENTER')), # Allign Table Text Center
+
         
         return table_style
 
@@ -190,7 +198,7 @@ def create_proj_schedule_pdf(stored_fig_data, proj_schedule_stored, df_milestone
     content.append(PlatypusImage('schedule_gantt.png', width=750, height=380))
     content.append(Paragraph("<br/><br/>", style_normal))
 
-    content.append(Paragraph("Project Milestones", section_paragraph_style))
+    content.append(Paragraph("Milestones over the Project Life", section_paragraph_style))
     content.append(Paragraph("<br/><br/>", style_normal))
     
     table = Table(df_milestones_data)
