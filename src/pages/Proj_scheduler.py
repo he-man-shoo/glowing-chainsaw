@@ -11,6 +11,7 @@ import math
 
 from gantt_chart_schedule import scheduler
 from proj_schedule_pdf import create_proj_schedule_pdf
+from schedule_excel import schedule_excel_op
 
 
 dash.register_page(__name__, name = "Project Scheduling Tool", order=2)
@@ -240,18 +241,12 @@ def update_button(ddn_gantt_filter):
     Output("download_schedule_xlsx", "data"),
     Output("dwnld_excel", "n_clicks"),
     [Input("dwnld_excel", "n_clicks"),
-     Input("stored_df", "data"),]
+     Input("stored_df", "data"),
+     Input("ddn_gantt_filter", "value"),]
 )
-def download_excel(n_clicks, proj_schedule_stored):
+def download_excel(n_clicks, proj_schedule_stored, scope):
     if n_clicks:
-        df = pd.DataFrame(data=proj_schedule_stored)
-        df.reset_index(drop=True, inplace=True)
-
-        for i in range(len(df)):
-                df.loc[i, "Start_Date"] = df.loc[i, "Start_Date"][:10] # first 10 characters of the string
-                df.loc[i, "End_Date"] = df.loc[i, "End_Date"][:10] # first 10 characters of the string
-        
-        df = df.replace({"PCS Supplier |": "PCS |"})
+        df = schedule_excel_op(proj_schedule_stored, scope)
                 
         return dcc.send_data_frame(df.to_excel, "Project Schedule.xlsx"), 0
     else:

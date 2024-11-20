@@ -80,10 +80,10 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         for i in range(number_manu_slots_pcs):
             df.loc[len(df) + 1, 'Event'] = "Shipment Batch #" + str(i + 1)
             if i == 0 :
-                df.loc[len(df) + 1, 'Event'] = 'Site Ready to Accept Delivery'
+                df.loc[len(df) + 1, 'Event'] = 'Start of Delivery Date'
                 df.loc[len(df) + 1, 'Event'] = 'Delivery Commencement'
             if i == number_manu_slots_pcs -1 :
-                df.loc[len(df) + 1, 'Event'] = 'Guaranteed Delivery Date'
+                df.loc[len(df) + 1, 'Event'] = 'Final Delivery of all PCS Equipment'
             
             df.loc[len(df) + 1, 'Event'] = "Installation Commencement"
             df.loc[len(df) + 1, 'Event'] = "Installation PCS Batch #" + str(i + 1)
@@ -121,15 +121,15 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             df.loc[df["Event"] == "Shipment Batch #" + str(i+1), 'End_Date'] = shipment_end
 
             if i == 0 :
-                df.loc[df["Event"] == 'Site Ready to Accept Delivery', 'Start_Date'] = shipment_end - pd.to_timedelta(time_site_ready_accept_delivery, unit="w")
-                df.loc[df["Event"] == 'Site Ready to Accept Delivery', 'End_Date'] = shipment_end - pd.to_timedelta(time_site_ready_accept_delivery, unit="w")
+                df.loc[df["Event"] == 'Start of Delivery Date', 'Start_Date'] = shipment_end - pd.to_timedelta(time_site_ready_accept_delivery, unit="w")
+                df.loc[df["Event"] == 'Start of Delivery Date', 'End_Date'] = shipment_end - pd.to_timedelta(time_site_ready_accept_delivery, unit="w")
 
                 df.loc[df["Event"] == 'Delivery Commencement', 'Start_Date'] = shipment_end
                 df.loc[df["Event"] == 'Delivery Commencement', 'End_Date'] = shipment_end
 
             if i == number_manu_slots_pcs - 1 :
-                df.loc[df["Event"] == 'Guaranteed Delivery Date', 'Start_Date'] = shipment_end
-                df.loc[df["Event"] == 'Guaranteed Delivery Date', 'End_Date'] = shipment_end
+                df.loc[df["Event"] == 'Final Delivery of all PCS Equipment', 'Start_Date'] = shipment_end
+                df.loc[df["Event"] == 'Final Delivery of all PCS Equipment', 'End_Date'] = shipment_end
 
             if i == 0:
                 pcs_delivery_to_site = shipment_end
@@ -144,15 +144,15 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             df.loc[df["Event"] == "Installation PCS Batch #" + str(i+1), 'Start_Date'] = installation_start
             df.loc[df["Event"] == "Installation PCS Batch #" + str(i+1), 'End_Date'] = installation_end
 
-        proj_milestones = ['Shipment Commencement', 'Site Ready to Accept Delivery', 'Installation Commencement']
-        paym_milestones = ['PO Date', 'First FAT', 'Delivery Commencement', 'Guaranteed Delivery Date']
+        proj_milestones = ['Shipment Commencement', 'Start of Delivery Date', 'Installation Commencement']
+        paym_milestones = ['PO Date', 'First FAT', 'Delivery Commencement', 'Final Delivery of all PCS Equipment']
 
         proj_milestones_combined = []
         paym_milestones_combined = []
 
 
-        # add Scope to the milestones if they do not have the word in the list; Bascially just to not have "PCS Supplier" in front of 'Site Ready to Accept Delivery'
-        list = ['Ready', 'Commencement']
+        # add Scope to the milestones if they do not have the word in the list; Bascially just to not have "PCS Supplier" in front of 'Start of Delivery Date'
+        list = ['Delivery Date', 'Commencement']
         for i in range(len(proj_milestones)):
             if any(item in proj_milestones[i] for item in list):
                 proj_milestones_combined.append(proj_milestones[i])
@@ -367,7 +367,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         proj_milestones = ['Backfeed Available', 'Commercial Operation Date', 'Installation Completion', 'Best Case Scenario Provisional Acceptance']
         paym_milestones = ['PO Date', 'Drawing Confirmation Date', 'First FAT', 'First BESS loaded at Port of Export', 'Final FAT', 'Financial Security Received by Prevalon', 'Financial Security Received by the Buyer', 'Final Delivery of all DC Block Equipment', 'Guaranteed Delivery Completion Date', 'Guaranteed Provisional Acceptance', 'Final Acceptance']
 
-        list = ['Acceptance', 'Commercial', 'Backfeed', 'Ready', 'Completion']
+        list = ['Acceptance', 'Commercial', 'Backfeed', 'Delivery Date', 'Completion']
 
         for i in range(len(proj_milestones)):
             if any(item in proj_milestones[i] for item in list):
@@ -385,7 +385,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
 
         df_3 = pd.concat([df, df_2], ignore_index=True)
 
-        list = ['Comissioning', 'Acceptance', 'Commercial', 'Backfeed', 'Ready', 'Installation', 'Commencement', 'Completion']
+        list = ['Comissioning', 'Acceptance', 'Commercial', 'Backfeed', 'Start of Delivery Date', 'Installation', 'Commencement', 'Completion']
 
         for i in range(len(df_3)):
             if any(item in df_3.loc[i, 'Event'] for item in list):
@@ -660,14 +660,14 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Filter based on Scope Chosen
 
     cust_mile_list = ['NTP', 'Battery Supplier | Drawing Confirmation Date', 'Battery Supplier | First FAT', \
-                     'Site Ready to Accept Delivery', 'Delivery Commencement', 'Installation Commencement', 'Guaranteed Delivery Completion Date', 'Installation Completion', \
+                     'Start of Delivery Date', 'Delivery Commencement', 'Installation Commencement', 'Guaranteed Delivery Completion Date', 'Installation Completion', \
                         'Guaranteed Provisional Acceptance', 'Commercial Operation Date', 'Final Acceptance', 'Backfeed Available', 'Installation', 'Comissioning Feeder #' + str(number_feeders)]
     
     batt_mile_list = ['Battery Supplier | PO Date', 'Battery Supplier | Manufacturing', 'Battery Supplier | Financial Security Received by Prevalon', 'Battery Supplier | Financial Security Received by the Buyer', 'Battery Supplier | Drawing Confirmation Date', 'Battery Supplier | First FAT', \
-                     'Battery Supplier | First BESS loaded at Port of Export', 'Battery Supplier | Shipment', 'Battery Supplier | Final Delivery of all DC Block Equipment', \
+                     'Battery Supplier | Final FAT', 'Battery Supplier | First BESS loaded at Port of Export', 'Battery Supplier | Shipment', 'Battery Supplier | Final Delivery of all DC Block Equipment', \
                         'Comissioning Feeder #' + str(number_feeders), 'Guaranteed Provisional Acceptance', 'Final Acceptance']
     
-    pcs_mile_list = ['PCS Supplier | PO Date', 'PCS Supplier | Manufacturing', 'PCS Supplier | Shipment', 'PCS Supplier | First FAT', 'PCS Supplier | Guaranteed Delivery Date', \
+    pcs_mile_list = ['PCS Supplier | PO Date', 'PCS Supplier | Manufacturing', 'PCS Supplier | Shipment', 'PCS Supplier | First FAT', 'PCS Supplier | Final Delivery of all PCS Equipment', \
                      'Guaranteed Provisional Acceptance']
     
     # print(paym_milestones_combined, proj_milestones_combined)
@@ -711,12 +711,12 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                 df_3 = df_3.drop(i)
         df_3.reset_index(drop=True, inplace=True)
         i = len(df_3) - 1
-        final_deli = df_3.loc[df_3['Event'] == 'PCS Supplier | Guaranteed Delivery Date']['Start_Date'].iloc[0]
+        final_deli = df_3.loc[df_3['Event'] == 'PCS Supplier | Final Delivery of all PCS Equipment']['Start_Date'].iloc[0]
         if cod > final_deli + pd.to_timedelta(60, unit="d"):
-            df_3.loc[i, 'Event'] = '60 Days after Guaranteed Delivery Date'
+            df_3.loc[i, 'Event'] = 'PCS Supplier | 60 Days after Final Delivery of all PCS Equipment'
             df_3.loc[i, 'Start_Date'] = final_deli + pd.to_timedelta(60, unit="d")
             df_3.loc[i, 'End_Date'] = final_deli + pd.to_timedelta(60, unit="d")
-            paym_milestones_combined.append('60 Days after Guaranteed Delivery Date')
+            paym_milestones_combined.append('PCS Supplier | 60 Days after Final Delivery of all PCS Equipment')
 
         # df_3 = df_3.sort_values(by=['End_Date'], ascending=True)
         
@@ -794,7 +794,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
             durations_desc.remove("Battery Supplier Drawing Confirmation, Manufacturing and FAT")
             durations_list.remove('From Battery Supplier PO Date to FAT')
 
-            duration_months.append(math.ceil(((df_3.loc[df_3["Event"].str.contains("Guaranteed Delivery")]['End_Date'].iloc[0] - df_3.loc[df_3["Event"].str.contains("Shipment Batch #1")]['Start_Date'].iloc[0]).days)/30.5))
+            duration_months.append(math.ceil(((df_3.loc[df_3["Event"].str.contains("Final Delivery of all PCS Equipment")]['End_Date'].iloc[0] - df_3.loc[df_3["Event"].str.contains("Shipment Batch #1")]['Start_Date'].iloc[0]).days)/30.5))
 
     elif "Customer" in scope:
         durations_desc.remove('PCS Supplier Drawing Confirmation, Manufacturing and FAT')
@@ -808,7 +808,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         durations_list.remove('Amount of Calendar Degradation of Batteries until PA')
 
         durations_list[1] = "Delivery"
-        durations_desc[1] = "From Delivery Commencement to Guaranteed Delivery Date"
+        durations_desc[1] = "From Delivery Commencement to Guaranteed Delivery Completion Date"
         
         duration_months.append(math.ceil((df_milestones.loc[len(df_milestones)-1, "Date"] - df_milestones.loc[0, "Date"]).days/30.5))
         duration_months.append(math.ceil(((df_milestones.loc[df_milestones["Event"].str.contains("Guaranteed Delivery Completion Date")]['Date'].iloc[0] - df_milestones.loc[df_milestones["Event"].str.contains("Delivery Commencement")]['Date'].iloc[0]).days)/30.5))
@@ -833,7 +833,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Float Table 
     df_floats = pd.DataFrame([])
 
-    df_floats['Float Description'] = ['Float for Commissioning and Testing', 'Float for Guaranteed Delivery Date', 'Float for PCS Supplier PO', 'Total Project Schedule Float']
+    df_floats['Float Description'] = ['Float for Commissioning and Testing', 'Float for Guaranteed Delivery Completion Date', 'Float for PCS Supplier PO', 'Total Project Schedule Float']
     df_floats['Duration (weeks)'] = [float_comm_duration, float_ship_duration, float_po_date, total_schedule_float]
 
     if intended_cod < cod:
@@ -857,8 +857,8 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     df_project_assump = pd.DataFrame([])
 
     df_supplier_assump['Supplier Assumptions'] = [
-                               " •	PCS manufacturing rate = " + str(number_of_PCS) + " PCSs per 24 months", \
-                               " •	PCS time from P.O. to FAT first unit = 24 Months", \
+                               " •	PCS manufacturing rate = " + str(number_of_PCS) + " PCSs per 24 weeks", \
+                               " •	PCS time from P.O. to FAT first unit = 24 weeks", \
                                " •	PCS shipment rate = 20 units per week", \
                                " •	PCS transportation time ex-works to site = 8 weeks", \
                                " •	Battery Supplier time from P.O. to Financial Security received by Prevalon = 45 Days", \
