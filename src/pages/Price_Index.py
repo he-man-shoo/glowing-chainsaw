@@ -61,8 +61,8 @@ layout = dbc.Container([
 
     dbc.Row([
         dbc.Col([
-            dbc.Spinner(dcc.Graph(id = "price_trend"))
-        ], width = {'size':12})
+            dbc.Spinner(dcc.Graph(id = "price_trend", style = {"height":"100vh"}))
+        ])
     ], justify='center', align='center'),
    
     html.Br(), 

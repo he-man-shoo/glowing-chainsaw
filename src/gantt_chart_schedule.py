@@ -657,6 +657,8 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     i = df_3.loc[df_3['Event'] == 'Installation Completion'].iloc[0].name
     df_3.loc[i, "Event_Category"] = "Project Milestone"
 
+    full_proj_schedule = df_3
+
     # Filter based on Scope Chosen
 
     cust_mile_list = ['NTP', 'Battery Supplier | Drawing Confirmation Date', 'Battery Supplier | First FAT', \
@@ -731,7 +733,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     # Months from FAT to COD
     months_fat_cod = str(months_diff(cod, first_fat))
 
-    proj_schedule_stored = df_3.to_dict()
+    proj_schedule_stored = full_proj_schedule.to_dict()
 
     if pcs_delay_fntp_po_date == 1:
         float_po_date = 0
