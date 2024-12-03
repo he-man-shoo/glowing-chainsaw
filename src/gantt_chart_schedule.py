@@ -364,8 +364,8 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         df_2.loc[df_2["Event"] == "Final Acceptance", 'Start_Date'] = fa
         df_2.loc[df_2["Event"] == "Final Acceptance", 'End_Date'] = fa
 
-        proj_milestones = ['Backfeed Available', 'Commercial Operation Date', 'Installation Completion', 'Best Case Scenario Provisional Acceptance']
-        paym_milestones = ['PO Date', 'Drawing Confirmation Date', 'First FAT', 'First BESS loaded at Port of Export', 'Final FAT', 'Financial Security Received by Prevalon', 'Financial Security Received by the Buyer', 'Final Delivery of all DC Block Equipment', 'Guaranteed Delivery Completion Date', 'Guaranteed Provisional Acceptance', 'Final Acceptance']
+        proj_milestones = ['Backfeed Available', 'Commercial Operation Date', 'Installation Completion', 'Best Case Scenario Provisional Acceptance', 'Final FAT']
+        paym_milestones = ['PO Date', 'Drawing Confirmation Date', 'First FAT', 'First BESS loaded at Port of Export', 'Financial Security Received by Prevalon', 'Financial Security Received by the Buyer', 'Final Delivery of all DC Block Equipment', 'Guaranteed Delivery Completion Date', 'Guaranteed Provisional Acceptance', 'Final Acceptance']
 
         list = ['Acceptance', 'Commercial', 'Backfeed', 'Delivery Date', 'Completion']
 
