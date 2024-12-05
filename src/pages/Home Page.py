@@ -174,7 +174,14 @@ html.Div([
 
 ]),
 
-
+dbc.Row([
+    dbc.Col([
+        dbc.Container(
+                [
+                    html.P(id="df_tool_assump"),
+                ]),
+        ], xs=12, sm=12, md=12, lg=6, xl=6),
+], justify='center', align='top'),
 
 ], fluid=True)
 
@@ -199,6 +206,7 @@ html.Div([
     Output('stored_BESS_Rating', 'data'),
     Output('stored_PCS_AC_Voltage', 'data'),
     Output('stored_PCS_model', 'data'),
+    Output('df_tool_assump', 'children'),
     Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
@@ -226,7 +234,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         fig, bol_config, aug_energy_table, power_energy_rte_table, \
             bill_of_materials, design_summary, losses_table, bol_design_summary, \
                 plot_title, y_axis_range, months_to_COD, block_type, \
-                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
+                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, df_tool_assump = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
     
         def table_format(table):
             return dash.dash_table.DataTable(table.to_dict('records', index=True), 
@@ -234,25 +242,15 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
                                                             'color': 'black',
                                                             'backgroundColor': 'white', 
                                                             'font-family':'arial',
-                                                            'font-size': '11px',
+                                                            'font-size': '14px',
                                                             'border': '1px solid black',
-                                                            'textAlign': 'center',
+                                                            'textAlign': 'left',
                                                             },
                                                 style_data_conditional=[
                                                                         {
                                                                         'if': {'row_index': 'odd'},
                                                                         'backgroundColor': 'rgb(220, 207, 235)',
                                                                         }, 
-
-                                                                        {
-                                                                        'if': {'column_id': 'Total Cost per component ($)', 'row_index': 3},
-                                                                        'fontWeight': 'bold',
-                                                                        },
-
-                                                                        {
-                                                                        'if': {'column_id': 'Component', 'row_index': 3},
-                                                                        'fontWeight': 'bold',
-                                                                        },
 
                                                                     ],
 
@@ -261,13 +259,13 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
                                                                 'color': 'white',
                                                                 'fontWeight': 'bold',
                                                                 'font-family':'Helvetica',
-                                                                'font-size': '12px',
+                                                                'font-size': '15px',
                                                                 'border': '1px solid black',
                                                                 'textAlign': 'center',
                                                             })
             
 
-        bol_config = table_format(bol_config)
+        df_tool_assump = table_format(df_tool_assump)
 
 
         fig_stored = fig
@@ -290,7 +288,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
 
         return fig, fig_stored, bill_of_materials_stored, design_summary_stored, \
     losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, \
-        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, n_clicks
+        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, df_tool_assump, n_clicks
 
     else:
         raise PreventUpdate

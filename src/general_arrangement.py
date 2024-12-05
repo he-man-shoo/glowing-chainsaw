@@ -588,7 +588,7 @@ def create_GA(proj_location, proj_name, power_req, duration, bol, PCS_kVA_string
         inner_block_width_partial = (n_s_block_limit % n_s_block_access_road)*(container_width*2 + container_clearance_minimum) + (n_s_block_limit % n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
         inner_block_width_full = n_s_block_access_road*(container_width*2 + container_clearance_minimum) + (n_s_block_access_road - 1) * container_clearance_long_end + access_road_width/4
 
-        print(n_s_block_limit//n_s_block_access_road)
+        # print(n_s_block_limit//n_s_block_access_road)
 
         if n_s_block_limit % n_s_block_access_road != 0:
         
