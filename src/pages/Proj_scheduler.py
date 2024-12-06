@@ -75,12 +75,12 @@ layout = dbc.Container([
      dbc.Col(   
             html.Div(
                         [
-                            html.P("Tool Boundaries", \
+                            html.P("Tool Assumptions", \
                                         id="sch_open", n_clicks=0, className='btn btn-warning mt-4'),
                             dbc.Modal(
                                 [
-                                    dbc.ModalHeader(dbc.ModalTitle("Any requests outside these boundaries \
-                                                                   should be directed to App Eng team")),
+                                    dbc.ModalHeader(dbc.ModalTitle("The calculations in the Tool re based\
+                                                                   on following assumptions")),
                                     dbc.ModalBody(table_format(df_schedule_assump())),
                                     dbc.ModalFooter(
                                         dbc.Button(
