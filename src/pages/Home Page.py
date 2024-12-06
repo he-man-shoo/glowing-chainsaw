@@ -1,5 +1,5 @@
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
@@ -16,6 +16,7 @@ from tech_proposal import create_tech_proposal
 from cost_memo import create_cost_memo
 from general_arrangement import create_GA
 from sld import create_SLD
+from boundaries_table import df_tool_assump, table_format
 
 
 dash.register_page(__name__, name = "Home", path='/', order=1)
@@ -32,7 +33,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col(html.H2("Indicative Sizing Tool", 
                         className='text-center text-primary-emphasis'),
-                        xs=12, sm=12, md=12, lg=6, xl=6)
+                        xs=12, sm=12, md=12, lg=10, xl=10)
     ], justify='around', align='center'),
     
     html.Br(),
@@ -90,7 +91,7 @@ layout = dbc.Container([
                 dcc.Dropdown(id='ddn_duration', options=[{'label':x, 'value':x}
                                                          for x in [2, 3, 4, 5, 6, 8]], value = 4, style={'fontSize':'14px'}),
 
-                html.P("Complaince Code", className='col-form-label col-form-label-sm mt-2'),
+                html.P("Compliance Code", className='col-form-label col-form-label-sm mt-2'),
                 dcc.Dropdown(id = 'ddn_rmu', options=[{'label':x, 'value':x}
                                                          for x in ["UL", "IEC"]], value = "UL", style={'fontSize':'14px'}),
 
@@ -111,6 +112,29 @@ layout = dbc.Container([
     ], justify='center'),
     
     dbc.Row([
+        dbc.Col(   
+            html.Div(
+                        [
+                            html.P("Tool Boundaries", \
+                                        id="open", n_clicks=0, className='btn btn-warning mt-4'),
+                            dbc.Modal(
+                                [
+                                    dbc.ModalHeader(dbc.ModalTitle("Any requests outside these boundaries \
+                                                                   should be directed to App Eng team")),
+                                    dbc.ModalBody(table_format(df_tool_assump())),
+                                    dbc.ModalFooter(
+                                        dbc.Button(
+                                            "Close", id="close", className="ms-auto", n_clicks=0
+                                        )
+                                    ),
+                                ],
+                                id="modal",
+                                size="xl",
+                                is_open=True,
+                            ),
+                        ]
+                    ), xs=12, sm=12, md=12, lg=2, xl=2),
+
         dbc.Col([
             html.P('Run Sizing', id='generate_sizing', className="btn btn-primary mt-4")
         ], xs=12, sm=12, md=12, lg=2, xl=2)
@@ -174,15 +198,6 @@ html.Div([
 
 ]),
 
-dbc.Row([
-    dbc.Col([
-        dbc.Container(
-                [
-                    html.P(id="df_tool_assump"),
-                ]),
-        ], xs=12, sm=12, md=12, lg=6, xl=6),
-], justify='center', align='top'),
-
 ], fluid=True)
 
 
@@ -206,7 +221,6 @@ dbc.Row([
     Output('stored_BESS_Rating', 'data'),
     Output('stored_PCS_AC_Voltage', 'data'),
     Output('stored_PCS_model', 'data'),
-    Output('df_tool_assump', 'children'),
     Output('generate_sizing', 'n_clicks'),
     [Input('inp_projloct', 'value'),
      Input('inp_projnm', 'value'),
@@ -234,38 +248,10 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
         fig, bol_config, aug_energy_table, power_energy_rte_table, \
             bill_of_materials, design_summary, losses_table, bol_design_summary, \
                 plot_title, y_axis_range, months_to_COD, block_type, \
-                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, df_tool_assump = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
+                    cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model = calculation(proj_location, proj_name, power_req, duration, number_cycles, point_of_measurement, RMU_Required, PF_required_at_POM, max_site_temp, oversize_required, project_life, number_of_augmentations, flat_guarantee)
     
-        def table_format(table):
-            return dash.dash_table.DataTable(table.to_dict('records', index=True), 
-                                                style_data={
-                                                            'color': 'black',
-                                                            'backgroundColor': 'white', 
-                                                            'font-family':'arial',
-                                                            'font-size': '14px',
-                                                            'border': '1px solid black',
-                                                            'textAlign': 'left',
-                                                            },
-                                                style_data_conditional=[
-                                                                        {
-                                                                        'if': {'row_index': 'odd'},
-                                                                        'backgroundColor': 'rgb(220, 207, 235)',
-                                                                        }, 
-
-                                                                    ],
-
-                                                style_header={
-                                                                'backgroundColor': 'rgb(127, 81, 185)',
-                                                                'color': 'white',
-                                                                'fontWeight': 'bold',
-                                                                'font-family':'Helvetica',
-                                                                'font-size': '15px',
-                                                                'border': '1px solid black',
-                                                                'textAlign': 'center',
-                                                            })
-            
-
-        df_tool_assump = table_format(df_tool_assump)
+        
+        bol_config = table_format(bol_config)
 
 
         fig_stored = fig
@@ -288,7 +274,7 @@ def update_output(proj_location, proj_name, power_req, duration, number_cycles,\
 
         return fig, fig_stored, bill_of_materials_stored, design_summary_stored, \
     losses_table_stored, bol_design_summary_stored, aug_energy_table_stored, power_energy_rte_table_stored, plot_title, y_axis_range, \
-        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, df_tool_assump, n_clicks
+        months_to_COD, block_type, cost_memo_table_stored, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, n_clicks
 
     else:
         raise PreventUpdate
@@ -412,3 +398,13 @@ def update_SLD(n_clicks, proj_location, proj_name, power_req, duration, complain
         SLD_PDF = ''
 
     return SLD_PDF, n_clicks
+
+@dash.callback(
+    Output("modal", "is_open"),
+    [Input("open", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open

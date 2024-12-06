@@ -483,41 +483,6 @@ def calculation(proj_location, proj_name, power_req, duration, number_cycles, po
     BESS_Rating = max_racks_per_container*batt_nameplate
 
 
-        # Assumptions Table
-
-    df_tool_assump = pd.DataFrame([])
-
-    df_tool_assump['Parameters'] = [
-                               "Project Size", \
-                               "Battery Enclosure", \
-                               "PCS Selection", \
-                               "BESS Interconnection Voltage", \
-                               "Design Life", \
-                               "Maximum Number of Augmentations", \
-                               "Ambient Temperature", \
-                               "Site altitude", \
-                               "Corossion rating", \
-                               "Wind loads (per ASCE 7-16, Risk Category III)", \
-                               "IEEE693 Seismic Category", \
-                               "Noise", \
-                               ]
-    
-    df_tool_assump['Tool Boundaries'] = [
-                               "up to 3.2GWh (Limited by Calendar Degradation data)", \
-                               "HD5 with 314Ah Cells (up to 5.02 MWh per Enclosure)", \
-                               "Sungrow 5MVA (default), Sungrow 4MVA (IEC or 6hr Projects), Sungrow 3.45MVA (8hr Projects)", \
-                               "34.5kV (by default)", \
-                               "up to 20 Years", \
-                               "1 augmentation every other year", \
-                               "-20 deg C to 50 deg C", \
-                               "<=1000 m from Mean Sea Level", \
-                               "C4", \
-                               "<=110 mph", \
-                               "Medium", \
-                               "<= 75dBA @ 1 meter from the Equipment", \
-                               ]
-    
-
     return fig, bol_config, aug_energy_table, power_energy_rte_table, bill_of_materials, design_summary, losses_table, \
-        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model, df_tool_assump
+        bol_design_summary, plot_title, y_axis_range, months_to_COD, block_type, cost_memo_table, PCS_kVA_string, BESS_Rating, PCS_AC_Voltage, PCS_model
 
