@@ -2,7 +2,7 @@ import dash
 from dash import html
 import dash_bootstrap_components as dbc
 from reportlab.graphics.shapes import *
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash import dcc
 import pandas as pd
@@ -12,7 +12,7 @@ import math
 from gantt_chart_schedule import scheduler
 from proj_schedule_pdf import create_proj_schedule_pdf
 from schedule_excel import schedule_excel_op
-
+from boundaries_table import df_schedule_assump, table_format
 
 dash.register_page(__name__, name = "Project Scheduling Tool", order=2)
 
@@ -72,11 +72,33 @@ layout = dbc.Container([
 
 
     dbc.Row([
+     dbc.Col(   
+            html.Div(
+                        [
+                            html.P("Tool Boundaries", \
+                                        id="sch_open", n_clicks=0, className='btn btn-warning mt-4'),
+                            dbc.Modal(
+                                [
+                                    dbc.ModalHeader(dbc.ModalTitle("Any requests outside these boundaries \
+                                                                   should be directed to App Eng team")),
+                                    dbc.ModalBody(table_format(df_schedule_assump())),
+                                    dbc.ModalFooter(
+                                        dbc.Button(
+                                            "Close", id="sch_close", className="ms-auto", n_clicks=0
+                                        )
+                                    ),
+                                ],
+                                id="sch_modal",
+                                size="xl",
+                                is_open=True,
+                            ),
+                        ]
+                    ), xs=12, sm=12, md=12, lg=2, xl=2),
         dbc.Col([
-            html.P('Generate Project Schedule', id='btn_schedule', className="text-center btn btn-primary m-4")
+            html.P('Generate Project Schedule', id='btn_schedule', className="btn btn-primary mt-4")
         ], xs=12, sm=12, md=12, lg=2, xl=2), 
 
-    ], justify='around', align='center'), 
+    ], justify='center', align='center'), 
 
     html.Br(),
 
@@ -143,23 +165,6 @@ layout = dbc.Container([
     html.Br(),
     html.Br(),
 
-    dbc.Row([
-        dbc.Col([
-            dbc.Container(
-                 [
-                      html.P(id="df_supplier_assump"),
-                  ]),
-            ], xs=12, sm=12, md=12, lg=4, xl=4),
-        dbc.Col([
-            dbc.Container(
-                 [
-                      html.P(id="df_project_assump"),
-                  ]),
-            ], xs=12, sm=12, md=12, lg=4, xl=4),
-    ], justify='center', align='top'),
-
-    html.Br(),
-    html.Br(),
 
 ], fluid=True), 
 
@@ -172,9 +177,7 @@ layout = dbc.Container([
     Output("stored_df_milestones", "data"),
     Output("df_critical_durations", "children"),
     Output("stored_df_critical_durations", "data"),
-    Output("df_floats", "children"),
-    Output("df_supplier_assump", "children"),
-    Output("df_project_assump", "children"),    
+    Output("df_floats", "children"),   
     Output("btn_schedule", "n_clicks"),
     [Input('btn_schedule', 'n_clicks'),
     Input('ntp', 'date'),
@@ -187,11 +190,10 @@ layout = dbc.Container([
 def gantt_chart(n_clicks, ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     if n_clicks:
         fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, \
-            df_critical_durations, stored_df_critical_durations, df_floats, \
-                df_supplier_assump, df_project_assump = scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope)
+            df_critical_durations, stored_df_critical_durations, df_floats = scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope)
         
         return fig, stored_fig, cod_date, schedule_excel, df_milestones, stored_df_milestones, \
-            df_critical_durations, stored_df_critical_durations, df_floats, df_supplier_assump, df_project_assump, 0
+            df_critical_durations, stored_df_critical_durations, df_floats, 0
     else:
         raise PreventUpdate
 
@@ -251,3 +253,13 @@ def download_excel(n_clicks, proj_schedule_stored, scope):
         return dcc.send_data_frame(df.to_excel, "Project Schedule.xlsx"), 0
     else:
         raise PreventUpdate
+
+@dash.callback(
+    Output("sch_modal", "is_open"),
+    [Input("sch_open", "n_clicks"), Input("sch_close", "n_clicks")],
+    [State("sch_modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
