@@ -79,7 +79,7 @@ layout = dbc.Container([
                                         id="sch_open", n_clicks=0, className='btn btn-warning mt-4'),
                             dbc.Modal(
                                 [
-                                    dbc.ModalHeader(dbc.ModalTitle("The calculations in the Tool re based\
+                                    dbc.ModalHeader(dbc.ModalTitle("The calculations in the Tool are based\
                                                                    on following assumptions")),
                                     dbc.ModalBody(table_format(df_schedule_assump())),
                                     dbc.ModalFooter(
