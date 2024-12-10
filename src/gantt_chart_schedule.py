@@ -431,7 +431,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
                 fig.add_annotation( 
                     x=row['Start_Date'], 
                     y=row['Event'], 
-                    text= str(row['Start_Date'].date()), 
+                    text= str(row['Start_Date'].date().strftime("%m/%d/%Y")), 
                     showarrow=False, 
                     yshift=0, 
                     xshift=60,
@@ -809,7 +809,12 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
         df_floats.loc[i, 'Duration (weeks)'] = math.ceil((cod - intended_cod).days/7)
 
     stored_fig_data = fig
-    df_milestones_stored = df_milestones.to_dict()
+    
+    stored_df_milestones = df_milestones
+    for i in range(len(stored_df_milestones)):
+        stored_df_milestones.loc[i, 'Date'] = stored_df_milestones.loc[i, 'Date'].strftime("%m/%d/%Y")
+    df_milestones_stored = stored_df_milestones.to_dict()
+    
     df_critical_durations_stored = df_critical_durations.to_dict()
     
     # Convert Dataframes to Tables
