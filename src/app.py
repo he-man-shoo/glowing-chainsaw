@@ -27,6 +27,10 @@ VALID_USERNAME_PASSWORD_PAIRS = {
     'rocky':'mountains',
     'dim':'sum',
     'pav':'bhaji',
+    'bald eagle':'giant panda',
+    'dead':'lift',
+    'clase':'azul',
+    'steel':'curtain',    
 }
 
 
