@@ -10,43 +10,6 @@ from boundaries_table import table_format
 
 def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
     
-    # def table_format(table):
-    #     return dash.dash_table.DataTable(table.to_dict('records', index=True), 
-    #                                     style_data={
-    #                                                 'color': 'black',
-    #                                                 'backgroundColor': 'white', 
-    #                                                 'font-family':'arial',
-    #                                                 'font-size': '11px',
-    #                                                 'border': '1px solid black',
-    #                                                 'textAlign': 'left',
-    #                                                 },
-
-    #                                     style_cell={
-    #                                                 'whiteSpace': 'normal',
-    #                                                 'height': 'auto',
-    #                                                  },
-    #                                     style_data_conditional=[
-    #                                                             {
-    #                                                             'if': {'row_index': 'odd'},
-    #                                                             'backgroundColor': 'rgb(220, 207, 235)',
-    #                                                             },  
-                                                                
-    #                                                             {
-    #                                                             'if': {'column_id': ['Payment Milestone', 'Months', 'Duration (weeks)']},
-    #                                                             'textAlign': 'center',
-    #                                                             },                                                                                                                               
-    #                                                         ],
-
-    #                                     style_header={
-    #                                                     'backgroundColor': 'rgb(127, 81, 185)',
-    #                                                     'color': 'white',
-    #                                                     'fontWeight': 'bold',
-    #                                                     'font-family':'Helvetica',
-    #                                                     'font-size': '12px',
-    #                                                     'border': '1px solid black',
-    #                                                     'textAlign': 'center',
-    #                                                 })
-
     def months_diff(start_date, end_date):
         # Ensure start_date is before end_date
         if start_date > end_date:
@@ -612,7 +575,7 @@ def scheduler(ntp, intended_cod, number_of_PCS, number_of_containers, scope):
 
     if batt_delivery_to_site - pd.to_timedelta(delay_intall_bess_last_pcs, unit="w") < pcs_delivery_to_site:
 
-        batt_delay_fntp_po_date = math.ceil((pcs_delivery_to_site - batt_delivery_to_site + pd.to_timedelta(delay_intall_bess_last_pcs + 1, unit="w")).days/7)
+        batt_delay_fntp_po_date = math.ceil((pcs_delivery_to_site - batt_delivery_to_site + pd.to_timedelta(delay_intall_bess_last_pcs, unit="w")).days/7)
 
         df_3, cod, first_fat, pcs_delivery_to_site, batt_delivery_to_site, paym_milestones_combined, proj_milestones_combined = create_schedule_table(pcs_delay_fntp_po_date, batt_delay_fntp_po_date, batt_delay_shipment_installation, comm_duration)
 
