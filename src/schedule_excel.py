@@ -8,6 +8,7 @@ def schedule_excel_op(proj_schedule_stored, scope):
 
     for i in range(len(df)):
             df.loc[i, "Start_Date"] = df.loc[i, "Start_Date"][:10] # first 10 characters of the string
+
             df.loc[i, "End_Date"] = df.loc[i, "End_Date"][:10] # first 10 characters of the string
 
     df = df.loc[(df['Event_Category'] == "Payment Milestone") | (df['Event_Category'] == "Project Milestone")]
@@ -41,5 +42,7 @@ def schedule_excel_op(proj_schedule_stored, scope):
 
     for i in range(len(df)):
         df.loc[i, 'Event'] = df.loc[i, 'Event'].replace(' | ', ' ')
+        df.loc[i, "Date"] = datetime.strptime(df.loc[i, "Date"], "%Y-%m-%d")
+        df.loc[i, "Date"] = df.loc[i, "Date"].strftime("%m/%d/%Y")
     
     return df
