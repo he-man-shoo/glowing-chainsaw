@@ -30,7 +30,8 @@ VALID_USERNAME_PASSWORD_PAIRS = {
     'bald eagle':'giant panda',
     'dead':'lift',
     'clase':'azul',
-    'steel':'curtain',    
+    'steel':'curtain',
+    'chaos':'coordinator'    
 }
 
 
